@@ -62,10 +62,10 @@ export class InnerAddDeck extends React.Component {
         return (
             <div >
                 {errorBar}
-                <DeckEditor agendas={this.props.agendas} cards={this.props.cards} packs={this.props.packs} mode='Add'
-                    onDeckChange={this.onDeckChange} onDeckSave={this.onAddDeck} />
-                <DeckSummary className='col-sm-6 right-pane' cards={this.props.cards} name={this.state.deckName} agenda={this.state.agenda}
-                    faction={this.state.faction} plotCards={this.state.plotCards} drawCards={this.state.drawCards} />
+                <DeckEditor agendas={ this.props.agendas } cards={ this.props.cards } packs={ this.props.packs } mode='Add' factions={ this.props.factions }
+                    onDeckChange={ this.onDeckChange } onDeckSave={ this.onAddDeck } />
+                <DeckSummary className='col-sm-6 right-pane' cards={ this.props.cards } name={ this.state.deckName } agenda={ this.state.agenda }
+                    faction={ this.state.faction } plotCards={ this.state.plotCards } drawCards={ this.state.drawCards } />
             </div >);
     }
 }
@@ -74,12 +74,17 @@ InnerAddDeck.displayName = 'InnerAddDeck';
 InnerAddDeck.propTypes = {
     agendas: React.PropTypes.array,
     cards: React.PropTypes.array,
+    factions: React.PropTypes.array,
     navigate: React.PropTypes.func,
     packs: React.PropTypes.array
 };
 
 function mapStateToProps(state) {
     return {
+        agendas: state.cards.agendas,
+        cards: state.cards.cards,
+        factions: state.cards.factions,
+        packs: state.cards.packs,
         socket: state.socket.socket
     };
 }

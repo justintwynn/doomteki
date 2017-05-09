@@ -22,6 +22,10 @@ function cards(state = {
             return Object.assign({}, state, {
                 packs: action.packs
             });
+        case 'RECEIVE_FACTIONS':
+            return Object.assign({}, state, {
+                factions: action.factions
+            });
         case 'ZOOM_CARD':
             return Object.assign({}, state, {
                 zoomCard: action.card

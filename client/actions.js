@@ -86,6 +86,30 @@ export function fetchPacks() {
     };
 }
 
+export function requestFactions() {
+    return {
+        type: 'REQUEST_FACTIONS'
+    };
+}
+
+export function receiveFactions(factions) {
+    return {
+        type: 'RECEIVE_FACTIONS',
+        factions: factions
+    };
+}
+
+export function fetchFactions() {
+    return dispatch => {
+        dispatch(requestFactions());
+
+        return $.ajax('/api/factions')
+            .done(function(data) {
+                dispatch(receiveFactions(data.factions));
+            });
+    };
+}
+
 export function receiveGames(games) {
     return {
         type: 'RECEIVE_GAMES',

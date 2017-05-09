@@ -26,16 +26,6 @@ class DeckEditor extends React.Component {
             bannerList: '',
             deckName: props.deckName || 'New Deck',
             drawCards: props.drawCards || [],
-            factions: [
-                { name: 'House Baratheon', value: 'baratheon' },
-                { name: 'House Greyjoy', value: 'greyjoy' },
-                { name: 'House Lannister', value: 'lannister' },
-                { name: 'House Martell', value: 'martell' },
-                { name: 'The Night\'s Watch', value: 'thenightswatch' },
-                { name: 'House Stark', value: 'stark' },
-                { name: 'House Targaryen', value: 'targaryen' },
-                { name: 'House Tyrell', value: 'tyrell' }
-            ],
             banners: [
                 { name: 'Banner of the Dragon', value: 'Banner of the Dragon'},
                 { name: 'Banner of the Kraken', value:  'Banner of the Kraken'},
@@ -112,7 +102,7 @@ class DeckEditor extends React.Component {
     }
 
     onFactionChange(event) {
-        var faction = _.find(this.state.factions, (faction) => {
+        var faction = _.find(this.props.factions, (faction) => {
             return faction.value === event.target.value;
         });
 
@@ -205,7 +195,7 @@ class DeckEditor extends React.Component {
             if(header.length >= 2) {
                 this.setState({ deckName: header[0] });
 
-                var faction = _.find(this.state.factions, faction => faction.name === header[1]);
+                var faction = _.find(this.props.factions, faction => faction.name === header[1]);
                 if(faction) {
                     this.setState({ selectedFaction: faction }, () => this.raiseDeckChanged());
                 }
@@ -308,7 +298,7 @@ class DeckEditor extends React.Component {
                 <form className='form form-horizontal'>
                     <Input name='deckName' label='Deck Name' labelClass='col-sm-3' fieldClass='col-sm-9' placeholder='Deck Name'
                         type='text' onChange={this.onChange.bind(this, 'deckName')} value={this.state.deckName} />
-                    <Select name='faction' label='Faction' labelClass='col-sm-3' fieldClass='col-sm-9' options={this.state.factions}
+                    <Select name='faction' label='Faction' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.factions }
                         onChange={this.onFactionChange} value={this.state.selectedFaction.value} />
                     <Select name='agenda' label='Agenda' labelClass='col-sm-3' fieldClass='col-sm-9' options={this.props.agendas}
                         onChange={this.onAgendaChange} value={this.state.selectedAgenda.code}
@@ -353,6 +343,7 @@ DeckEditor.propTypes = {
     deckName: React.PropTypes.string,
     drawCards: React.PropTypes.array,
     faction: React.PropTypes.object,
+    factions: React.PropTypes.array,
     mode: React.PropTypes.string,
     onDeckChange: React.PropTypes.func,
     onDeckSave: React.PropTypes.func,

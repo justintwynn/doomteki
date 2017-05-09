@@ -41,21 +41,23 @@ var leftMenu = [
     { name: 'About', path: '/about' }
 ];
 
-var lobby = <Lobby />;
-var login = <Login />;
-var logout = <Logout />;
-var register = <Register />;
-var decks = <Decks />;
-var gameBoard = <GameBoard />;
-var gameLobby = <GameLobby />;
-var about = <About />;
-var forgot = <ForgotPassword />;
-var profile = <Profile />;
+let lobby = <Lobby />;
+let login = <Login />;
+let logout = <Logout />;
+let register = <Register />;
+let decks = <Decks />;
+let gameBoard = <GameBoard />;
+let gameLobby = <GameLobby />;
+let about = <About />;
+let forgot = <ForgotPassword />;
+let profile = <Profile />;
+let addDeck = <AddDeck />;
 
 class App extends React.Component {
     componentWillMount() {
         this.props.fetchCards();
         this.props.fetchPacks();
+        this.props.fetchFactions();
 
         $(document).ajaxError((event, xhr) => {
             if(xhr.status === 401) {
@@ -230,10 +232,10 @@ class App extends React.Component {
                 component = decks;
                 break;
             case '/decks/add':
-                component = <AddDeck cards={this.props.cards} packs={this.props.packs} agendas={this.props.agendas} />;
+                component = addDeck;
                 break;
             case '/decks/edit':
-                component = <EditDeck cards={this.props.cards} packs={this.props.packs} agendas={this.props.agendas} deckId={pathArg} />;
+                component = <EditDeck deckId={pathArg} />;
                 break;
             case '/play':
                 component = (this.props.currentGame && this.props.currentGame.started) ? gameBoard : gameLobby;
@@ -271,6 +273,7 @@ App.propTypes = {
     clearGameState: React.PropTypes.func,
     currentGame: React.PropTypes.object,
     fetchCards: React.PropTypes.func,
+    fetchFactions: React.PropTypes.func,
     fetchPacks: React.PropTypes.func,
     gameSocketConnectError: React.PropTypes.func,
     gameSocketConnected: React.PropTypes.func,
@@ -302,6 +305,7 @@ function mapStateToProps(state) {
         agendas: state.cards.agendas,
         cards: state.cards.cards,
         currentGame: state.games.currentGame,
+        factions: state.cards.factions,
         games: state.games.games,
         packs: state.cards.packs,
         path: state.navigation.path,

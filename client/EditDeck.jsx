@@ -109,12 +109,16 @@ InnerEditDeck.propTypes = {
     agendas: React.PropTypes.array,
     cards: React.PropTypes.array,
     deckId: React.PropTypes.string.isRequired,
+    factions: React.PropTypes.array,
     navigate: React.PropTypes.func,
     packs: React.PropTypes.array
 };
 
 function mapStateToProps(state) {
     return {
+        agendas: state.cards.agendas,
+        cards: state.cards.cards,
+        factions: state.cards.factions,
         socket: state.socket.socket
     };
 }
