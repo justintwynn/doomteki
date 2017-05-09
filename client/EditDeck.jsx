@@ -33,12 +33,7 @@ class InnerEditDeck extends React.Component {
 
                 this.setState({
                     loaded: true,
-                    deckName: deck.name,
-                    faction: deck.faction,
-                    agenda: deck.agenda,
-                    plotCards: deck.plotCards,
-                    drawCards: deck.drawCards,
-                    bannerCards: deck.bannerCards
+                    deck: deck
                 });
             })
             .fail(() => {
@@ -91,13 +86,10 @@ class InnerEditDeck extends React.Component {
                 {errorBar}
                 {this.state.loaded ?
                     <div>
-                        <DeckEditor agendas={this.props.agendas} cards={this.props.cards} packs={this.props.packs}
-                            deckName={this.state.deckName} mode='Save'
-                            faction={this.state.faction} agenda={this.state.agenda}
-                            plotCards={this.state.plotCards} drawCards={this.state.drawCards} bannerCards={this.state.bannerCards}
-                            onDeckChange={this.onDeckChange} onDeckSave={this.onEditDeck} />
-                        <DeckSummary className='col-sm-6 right-pane' cards={this.props.cards} name={this.state.deckName} agenda={this.state.agenda}
-                            faction={this.state.faction} plotCards={this.state.plotCards} drawCards={this.state.drawCards} bannerCards={this.state.bannerCards} />
+                        <DeckEditor agendas={ this.props.agendas } cards={ this.props.cards } packs={ this.props.packs }
+                            deck={ this.state.deck } mode='Save' onDeckChange={ this.onDeckChange } onDeckSave={ this.onEditDeck } />
+                        <DeckSummary className='col-sm-6 right-pane' cards={ this.props.cards } name={ this.state.deckName } agenda={ this.state.agenda }
+                            faction={ this.state.faction } plotCards={ this.state.plotCards } drawCards={ this.state.drawCards } bannerCards={ this.state.bannerCards } />
                     </div> :
                     <div>Loading deck...</div>}
             </div>);

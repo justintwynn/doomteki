@@ -107,10 +107,10 @@ class DeckSummary extends React.Component {
                 { this.state.cardToShow ? <img className='hover-image' src={ '/img/cards/' + this.state.cardToShow.code + '.png' } /> : null }
                 <h3>{ this.props.name }</h3>
                 <div className='decklist'>
-                    <img className='pull-left' src={ '/img/cards/' + this.props.faction.value + '.png' } />
+                    { this.props.faction ? <img className='pull-left' src={ '/img/cards/' + this.props.faction.value + '.png' } /> : null }
                     { this.props.agenda && this.props.agenda.code ? <img className='pull-right' src={ '/img/cards/' + this.props.agenda.code + '.png' } /> : null }
                     <div>
-                        <h4>{ this.props.faction.name }</h4>
+                        <h4>{ this.props.faction ? this.props.faction.name : null }</h4>
                         <div ref='agenda'>Agenda: { this.props.agenda && this.props.agenda.label ? <span className='card-link' onMouseOver={ this.onCardMouseOver }
                             onMouseOut={ this.onCardMouseOut }>{ this.props.agenda.label }</span> : <span>None</span> }</div>
                    
@@ -143,7 +143,7 @@ DeckSummary.propTypes = {
     faction: React.PropTypes.shape({
         name: React.PropTypes.string,
         value: React.PropTypes.string
-    }).isRequired,
+    }),
     name: React.PropTypes.string,
     plotCards: React.PropTypes.array
 };

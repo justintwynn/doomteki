@@ -24,8 +24,8 @@ class DeckEditor extends React.Component {
         this.state = {
             cardList: '',
             bannerList: '',
-            deckName: props.deckName || 'New Deck',
-            drawCards: props.drawCards || [],
+            deckName: props.deck ? props.deck.name : 'New Deck',
+            drawCards: props.deck ? props.deck.drawCards : undefined,
             banners: [
                 { name: 'Banner of the Dragon', value: 'Banner of the Dragon'},
                 { name: 'Banner of the Kraken', value:  'Banner of the Kraken'},
@@ -37,15 +37,11 @@ class DeckEditor extends React.Component {
                 { name: 'Banner of the Wolf', value: 'Banner of the Wolf'}
             ],
             numberToAdd: 1,
-            plotCards: props.plotCards || [],
-            bannerCards: props.bannerCards || [],
-            selectedAgenda: props.agenda || {},
-            selectedBanner: {},
-            bannersVisible: (props.agenda && props.agenda.name === 'Alliance') || false,
-            selectedFaction: props.faction || {
-                name: 'House Baratheon',
-                value: 'baratheon'
-            },
+            plotCards: props.deck ? props.deck.plotCards : undefined,
+            bannerCards: props.deck ? props.deck.bannerCards : undefined,
+            selectedAgenda: props.deck ? props.deck.agenda : undefined,
+            bannersVisible: (props.deck && props.deck.agenda && props.deck.agenda.code === '06018') || false,
+            selectedFaction: props.deck ? props.deck.faction : props.factions ? props.factions[0] : undefined,
             validation: {
                 deckname: '',
                 cardToAdd: ''
@@ -56,18 +52,21 @@ class DeckEditor extends React.Component {
     componentWillMount() {
         var cardList = '';
         var bannerList = '';
-        if(this.props.bannerCards) {
-            _.each(this.props.bannerCards, card => {
+
+        if(this.props.deck && this.props.deck.bannerCards) {
+            _.each(this.props.deck.bannerCards, card => {
                 bannerList += ' ' + card.label + '\n';
             });
-            this.setState({bannerList: bannerList});
+
+            this.setState({ bannerList: bannerList });
         }
-        if(this.props.drawCards || this.props.plotCards) {
-            _.each(this.props.drawCards, card => {
+
+        if(this.props.deck && (this.props.deck.drawCards || this.props.deck.plotCards)) {
+            _.each(this.props.deck.drawCards, card => {
                 cardList += card.count + ' ' + card.card.label + '\n';
             });
 
-            _.each(this.props.plotCards, card => {
+            _.each(this.props.deck.plotCards, card => {
                 cardList += card.count + ' ' + card.card.label + '\n';
             });
 
@@ -297,12 +296,12 @@ class DeckEditor extends React.Component {
                 <h4>Either type the cards manually into the box below, add the cards one by one using the card box and autocomplete or for best results, copy and paste a decklist from <a href='http://thronesdb.com' target='_blank'>Thrones DB</a> into the box below.</h4>
                 <form className='form form-horizontal'>
                     <Input name='deckName' label='Deck Name' labelClass='col-sm-3' fieldClass='col-sm-9' placeholder='Deck Name'
-                        type='text' onChange={this.onChange.bind(this, 'deckName')} value={this.state.deckName} />
+                        type='text' onChange={this.onChange.bind(this, 'deckName')} value={ this.state.deckName } />
                     <Select name='faction' label='Faction' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.factions }
-                        onChange={this.onFactionChange} value={this.state.selectedFaction.value} />
-                    <Select name='agenda' label='Agenda' labelClass='col-sm-3' fieldClass='col-sm-9' options={this.props.agendas}
-                        onChange={this.onAgendaChange} value={this.state.selectedAgenda.code}
-                        valueKey='code' nameKey='label' blankOption={{ label: '- Select -', code: '' }} />
+                        onChange={ this.onFactionChange } value={ this.state.selectedFaction ? this.state.selectedFaction.value : undefined } />
+                    <Select name='agenda' label='Agenda' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.agendas }
+                        onChange={ this.onAgendaChange } value={ this.state.selectedAgenda ? this.state.selectedAgenda.code : undefined }
+                        valueKey='code' nameKey='label' blankOption={ { label: '- Select -', code: '' } } />
 
                     {this.state.bannersVisible &&
                     <div>
@@ -336,19 +335,21 @@ class DeckEditor extends React.Component {
 
 DeckEditor.displayName = 'DeckEditor';
 DeckEditor.propTypes = {
-    agenda: React.PropTypes.object,
     agendas: React.PropTypes.array,
-    bannerCards: React.PropTypes.array,
     cards: React.PropTypes.array,
-    deckName: React.PropTypes.string,
-    drawCards: React.PropTypes.array,
-    faction: React.PropTypes.object,
+    deck: React.PropTypes.shape({
+        agenda: React.PropTypes.object,
+        bannerCards: React.PropTypes.array,
+        drawCards: React.PropTypes.array,
+        faction: React.PropTypes.object,
+        name: React.PropTypes.string,
+        plotCards: React.PropTypes.array
+    }),
     factions: React.PropTypes.array,
     mode: React.PropTypes.string,
     onDeckChange: React.PropTypes.func,
     onDeckSave: React.PropTypes.func,
-    packs: React.PropTypes.array,
-    plotCards: React.PropTypes.array
+    packs: React.PropTypes.array
 };
 
 export default DeckEditor;
