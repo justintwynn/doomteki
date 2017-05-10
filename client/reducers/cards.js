@@ -1,30 +1,23 @@
 import _ from 'underscore';
 
 function cards(state = {
-    cards: []
 }, action) {
     switch(action.type) {
-        case 'REQUEST_CARDS':
-            return Object.assign({}, state, {
-            });
-        case 'REQUEST_PACKS':
-            return Object.assign({}, state, {
-            });
         case 'RECEIVE_CARDS':
-            var agendas = _.filter(action.cards, function(card) {
+            var agendas = _.filter(action.response.cards, function(card) {
                 return card.type_code === 'agenda' && card.pack_code !== 'VDS';
             });
             return Object.assign({}, state, {
-                cards: action.cards,
+                cards: action.response.cards,
                 agendas: agendas
             });
         case 'RECEIVE_PACKS':
             return Object.assign({}, state, {
-                packs: action.packs
+                packs: action.response.packs
             });
         case 'RECEIVE_FACTIONS':
             return Object.assign({}, state, {
-                factions: action.factions
+                factions: action.response.factions
             });
         case 'ZOOM_CARD':
             return Object.assign({}, state, {

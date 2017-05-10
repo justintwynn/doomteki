@@ -55,9 +55,9 @@ let addDeck = <AddDeck />;
 
 class App extends React.Component {
     componentWillMount() {
-        this.props.fetchCards();
-        this.props.fetchPacks();
-        this.props.fetchFactions();
+        this.props.loadCards();
+        this.props.loadPacks();
+        this.props.loadFactions();
 
         $(document).ajaxError((event, xhr) => {
             if(xhr.status === 401) {
@@ -272,15 +272,15 @@ App.propTypes = {
     cards: React.PropTypes.array,
     clearGameState: React.PropTypes.func,
     currentGame: React.PropTypes.object,
-    fetchCards: React.PropTypes.func,
-    fetchFactions: React.PropTypes.func,
-    fetchPacks: React.PropTypes.func,
     gameSocketConnectError: React.PropTypes.func,
     gameSocketConnected: React.PropTypes.func,
     gameSocketConnecting: React.PropTypes.func,
     gameSocketDisconnect: React.PropTypes.func,
     gameSocketReconnecting: React.PropTypes.func,
     games: React.PropTypes.array,
+    loadCards: React.PropTypes.func,
+    loadFactions: React.PropTypes.func,
+    loadPacks: React.PropTypes.func,
     loggedIn: React.PropTypes.bool,
     navigate: React.PropTypes.func,
     packs: React.PropTypes.array,

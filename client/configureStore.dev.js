@@ -4,8 +4,10 @@ import thunkMiddleware from 'redux-thunk';
 import rootReducer from './reducers';
 import DevTools from './DevTools';
 
+import callAPIMiddleware from './middleware/api-middleware.js';
+
 const enhancer = compose(
-    applyMiddleware(thunkMiddleware),
+    applyMiddleware(thunkMiddleware, callAPIMiddleware),
     DevTools.instrument(),
     persistState(getDebugSessionKey())
 );
