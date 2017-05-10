@@ -7,6 +7,7 @@ import moment from 'moment';
 import * as actions from './actions';
 import Avatar from './Avatar.jsx';
 import News from './SiteComponents/News.jsx';
+import AlertPanel from './SiteComponents/AlertPanel.jsx';
 
 class InnerLobby extends React.Component {
     constructor() {
@@ -100,11 +101,11 @@ class InnerLobby extends React.Component {
 
         return (
             <div>
-                { this.props.bannerNotice ? <div className='alert alert-danger'>{this.props.bannerNotice}</div> : null }
-                <div className='alert alert-info'>
+                { this.props.bannerNotice ? <AlertPanel message={ this.props.bannerNotice } type='error' /> : null }
+                <AlertPanel type='info' message='Latest Site News'>
                     {this.props.newsLoading ? <div>News loading...</div> : null}
                     <News news={this.props.news} />
-                </div>
+                </AlertPanel>
                 <div className='row'>
                     <span className='col-sm-9 text-center'><h1>Play A Game Of Thrones 2nd Edition</h1></span>
                     <span className='col-sm-3 hidden-xs'><h3>{'Online Users (' + users.length + ')'}</h3></span>

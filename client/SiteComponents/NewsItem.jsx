@@ -5,7 +5,7 @@ class NewsItem extends React.Component {
         return (
             <div>
                 <span className={'icon-' + this.props.icon} />
-                {this.props.date + ' - ' + this.props.text}
+                &nbsp;{this.props.date + ' - ' + this.props.text}
             </div>);        
     }
 }
