@@ -12,7 +12,7 @@ class NewsItem extends React.Component {
 
 NewsItem.displayName = 'NewsItem';
 NewsItem.propTypes = {
-    date: React.PropTypes.date,
+    date: React.PropTypes.string,
     icon: React.PropTypes.oneOf(['military', 'intrigue', 'power']),
     text: React.PropTypes.string
 };

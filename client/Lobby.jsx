@@ -92,9 +92,9 @@ class InnerLobby extends React.Component {
 
         var users = _.map(this.props.users, user => {
             return (
-                <div>
+                <div key={ user.name }>
                     <Avatar emailHash={ user.emailHash } forceDefault={ user.noAvatar } />
-                    <span>{user.name}</span>
+                    <span>{ user.name }</span>
                 </div>
             );
         });
