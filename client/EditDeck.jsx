@@ -17,10 +17,10 @@ class InnerEditDeck extends React.Component {
 
     componentWillMount() {
         if(this.props.deckId) {
-            console.info('loading', this.props.deckId);
             return this.props.loadDeck(this.props.deckId);
         } else if(this.props.deck) {
-            console.info('selected', this.props.deck._id);
+            this.props.setUrl('/decks/edit/' + this.props.deck._id);
+
             return this.props.loadDeck(this.props.deck._id);
         }
     }
@@ -57,11 +57,13 @@ class InnerEditDeck extends React.Component {
         if(this.props.loading) {
             content = <div>Loading decks from the server...</div>;
         } else if(this.props.apiError) {
-            content = <AlertPanel type='error' message={ this.props.apiError } />;
+            content = <AlertPanel type='error' message={this.props.apiError} />;
+        } else if(!this.props.deck) {
+            content = <AlertPanel message='The specified deck was not found' type='error' />;
         } else {
             content = (<div>
-                        <DeckEditor agendas={ this.props.agendas } cards={ this.props.cards } packs={ this.props.packs }
-                            deck={ this.props.deck } mode='Save' onDeckChange={ this.onDeckChange } onDeckSave={ this.onEditDeck } />
+                        {/*<DeckEditor agendas={ this.props.agendas } cards={ this.props.cards } packs={ this.props.packs }
+                            deck={ this.props.deck } mode='Save' onDeckChange={ this.onDeckChange } onDeckSave={ this.onEditDeck } />*/}
                         <DeckSummary className='col-sm-6 right-pane' cards={ this.props.cards } deck={ this.props.deck } />
                     </div>);
         }
@@ -81,7 +83,8 @@ InnerEditDeck.propTypes = {
     loadDeck: React.PropTypes.func,
     loading: React.PropTypes.bool,
     navigate: React.PropTypes.func,
-    packs: React.PropTypes.array
+    packs: React.PropTypes.array,
+    setUrl: React.PropTypes.func
 };
 
 function mapStateToProps(state) {

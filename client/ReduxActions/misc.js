@@ -6,6 +6,13 @@ export function navigate(path, search) {
     };
 }
 
+export function setUrl(path) {
+    return {
+        type: 'SET_URL',
+        path: path
+    };
+}
+
 export function setContextMenu(menu) {
     return {
         type: 'SET_CONTEXT_MENU',
