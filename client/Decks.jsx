@@ -14,44 +14,18 @@ class InnerDecks extends React.Component {
     constructor() {
         super();
 
-        this.onSelectionChanged = this.onSelectionChanged.bind(this);
         this.onDeleteClick = this.onDeleteClick.bind(this);
         this.onConfirmDeleteClick = this.onConfirmDeleteClick.bind(this);
         this.onEditClick = this.onEditClick.bind(this);
 
         this.state = {
-            loaded: false,
             decks: [],
-            error: '',
             showDelete: false
         };
     }
 
     componentWillMount() {
-        $.ajax({
-            url: '/api/decks',
-            type: 'GET',
-            cache: false
-        }).done((data) => {
-            this.setState({ loaded: true });
-
-            if(!data.success) {
-                this.setState({ error: data.message });
-                return;
-            }
-
-            this.setState({ decks: data.decks });
-
-            if(data.decks.length !== 0) {
-                this.setState({ selectedDeck: 0 });
-            }
-        }).fail(() => {
-            this.setState({ loaded: true, error: 'Could not communicate with the server.  Please try again later.' });
-        });
-    }
-
-    onSelectionChanged(newIndex) {
-        this.setState({ selectedDeck: newIndex });
+        this.props.loadDecks();
     }
 
     onDeleteClick(event) {
@@ -64,7 +38,6 @@ class InnerDecks extends React.Component {
         event.preventDefault();
 
         var selectedDeck = this.state.decks[this.state.selectedDeck];
-
 
         this.props.navigate('/decks/edit/' + selectedDeck._id);
     }
@@ -100,11 +73,12 @@ class InnerDecks extends React.Component {
     }
 
     render() {
-        var errorBar = this.state.error ? <AlertPanel type='error' message={ this.state.error } /> : null;
         var index = 0;
 
-        var decks = _.map(this.state.decks, deck => {
-            var row = <DeckRow key={deck.name + index.toString()} deck={deck} onClick={this.onSelectionChanged.bind(this, index)} active={index === this.state.selectedDeck} />;
+        var decks = _.map(this.props.decks, deck => {
+            var row = (<DeckRow key={deck.name + index.toString()} deck={ deck } 
+                                onClick={ () => this.props.selectDeck(deck) } 
+                                active={ this.props.selectedDeck && deck._id === this.props.selectedDeck._id } />);
 
             index++;
 
@@ -119,53 +93,58 @@ class InnerDecks extends React.Component {
 
         var deckInfo = null;
 
-        if(this.state.selectedDeck !== undefined) {
-            var selectedDeck = undefined;
-            selectedDeck = this.state.decks[this.state.selectedDeck];
-
-            if(selectedDeck) {
-                deckInfo = (<div className='col-sm-6'>
-                    <div className='btn-group'>
-                        <button className='btn btn-primary' onClick={this.onEditClick}>Edit</button>
-                        <button className='btn btn-primary' onClick={this.onDeleteClick}>Delete</button>
-                        {this.state.showDelete ?
-                            <button className='btn btn-danger' onClick={this.onConfirmDeleteClick}>Delete</button> :
-                            null}
-                    </div>
-                    <DeckSummary name={selectedDeck.name} faction={selectedDeck.faction} bannerCards={selectedDeck.bannerCards}
-                        plotCards={selectedDeck.plotCards} drawCards={selectedDeck.drawCards} agenda={selectedDeck.agenda}
-                        cards={this.props.cards} />
-                </div>);
-            } else {
-                deckInfo = null;
-            }
+        if(this.props.selectedDeck) {
+            deckInfo = (<div className='col-sm-6'>
+                <div className='btn-group'>
+                    <button className='btn btn-primary' onClick={this.onEditClick}>Edit</button>
+                    <button className='btn btn-primary' onClick={this.onDeleteClick}>Delete</button>
+                    {this.state.showDelete ?
+                        <button className='btn btn-danger' onClick={this.onConfirmDeleteClick}>Delete</button> :
+                        null}
+                </div>
+                <DeckSummary deck={ this.props.selectedDeck } cards={this.props.cards} />
+            </div>);
         }
 
-        return (
-            <div>
-                {this.state.loaded ?
+        let content = null;
+
+        if(this.props.loading) {
+            content = <div>Loading decks from the server...</div>;
+        } else if(this.props.apiError) {
+            content = <AlertPanel type='error' message={ this.props.apiError } />;
+        } else {
+            content = (
                 <div>
-                    {errorBar}
                     <div className='col-sm-6'>
                         <Link className='btn btn-primary' href='/decks/add'>Add new deck</Link>
-                        <div className='deck-list'>{this.state.decks.length === 0 ? 'You have no decks, try adding one.' : deckList}</div>
+                        <div className='deck-list'>{ this.props.decks.length === 0 ? 'You have no decks, try adding one.' : deckList }</div>
                     </div>
-                    {deckInfo}
-                </div>
-                : <div>Loading decks from the server...</div>}
-            </div>);
+                    { deckInfo }
+                </div>);
+        }
+
+        return content;
     }
 }
 
 InnerDecks.displayName = 'Decks';
 InnerDecks.propTypes = {
+    apiError: React.PropTypes.string,
     cards: React.PropTypes.array,
-    navigate: React.PropTypes.func
+    decks: React.PropTypes.array,
+    loadDecks: React.PropTypes.func,
+    loading: React.PropTypes.bool,
+    navigate: React.PropTypes.func,
+    selectDeck: React.PropTypes.func,
+    selectedDeck: React.PropTypes.object
 };
 
 function mapStateToProps(state) {
     return {
-        cards: state.cards.cards
+        apiError: state.api.message,
+        decks: state.deck.decks,
+        loading: state.api.loading,
+        selectedDeck: state.deck.selectedDeck
     };
 }
 

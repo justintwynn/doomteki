@@ -1,5 +1,6 @@
 import React from 'react';
 import $ from 'jquery';
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import io from 'socket.io-client';
 
@@ -40,18 +41,6 @@ var leftMenu = [
     { name: 'Play', path: '/play' },
     { name: 'About', path: '/about' }
 ];
-
-let lobby = <Lobby />;
-let login = <Login />;
-let logout = <Logout />;
-let register = <Register />;
-let decks = <Decks />;
-let gameBoard = <GameBoard />;
-let gameLobby = <GameLobby />;
-let about = <About />;
-let forgot = <ForgotPassword />;
-let profile = <Profile />;
-let addDeck = <AddDeck />;
 
 class App extends React.Component {
     componentWillMount() {
@@ -215,42 +204,44 @@ class App extends React.Component {
             tokenArg = this.getUrlParameter('token');
         }
 
+        let boundActionCreators = bindActionCreators(actions, this.props.dispatch);
+
         switch(path) {
             case '/':
-                component = lobby;
+                component = <Lobby />;
                 break;
             case '/login':
-                component = login;
+                component = <Login />;
                 break;
             case '/logout':
-                component = logout;
+                component = <Logout />;
                 break;
             case '/register':
-                component = register;
+                component = <Register />;
                 break;
             case '/decks':
-                component = decks;
+                component = <Decks { ...boundActionCreators } />;
                 break;
             case '/decks/add':
-                component = addDeck;
+                component = <AddDeck />;
                 break;
             case '/decks/edit':
                 component = <EditDeck deckId={pathArg} />;
                 break;
             case '/play':
-                component = (this.props.currentGame && this.props.currentGame.started) ? gameBoard : gameLobby;
+                component = (this.props.currentGame && this.props.currentGame.started) ? <GameBoard /> : <GameLobby />;
                 break;
             case '/about':
-                component = about;
+                component = <About />;
                 break;
             case '/forgot':
-                component = forgot;
+                component = <ForgotPassword />;
                 break;
             case '/reset-password':
                 component = <ResetPassword id={ idArg } token={ tokenArg } />;
                 break;
             case '/profile':
-                component = profile;
+                component = <Profile />;
                 break;
             default:
                 component = <NotFound />;
@@ -272,6 +263,7 @@ App.propTypes = {
     cards: React.PropTypes.array,
     clearGameState: React.PropTypes.func,
     currentGame: React.PropTypes.object,
+    dispatch: React.PropTypes.func,
     gameSocketConnectError: React.PropTypes.func,
     gameSocketConnected: React.PropTypes.func,
     gameSocketConnecting: React.PropTypes.func,
@@ -315,6 +307,13 @@ function mapStateToProps(state) {
     };
 }
 
-const Application = connect(mapStateToProps, actions)(App);
+function mapDispatchToProps(dispatch) {
+    let boundActions = bindActionCreators(actions, dispatch);
+    boundActions.dispatch = dispatch;
+    
+    return boundActions;
+}
+
+const Application = connect(mapStateToProps, mapDispatchToProps)(App);
 
 export default Application;

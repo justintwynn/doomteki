@@ -2,7 +2,7 @@ import $ from 'jquery';
 
 export function loadCards() {
     return {
-        types: ['REQUEST_CARDS', 'RECEIVE_CARDS', 'CARDS_FAILURE'],
+        types: ['REQUEST_CARDS', 'RECEIVE_CARDS'],
         shouldCallAPI: (state) => {
             return !state.cards.cards;  
         },
@@ -12,7 +12,7 @@ export function loadCards() {
 
 export function loadPacks() {
     return {
-        types: ['REQUEST_PACKS', 'RECEIVE_PACKS', 'PACKS_FAILURE'],
+        types: ['REQUEST_PACKS', 'RECEIVE_PACKS'],
         shouldCallAPI: (state) => {
             return !state.cards.packs;  
         },
@@ -22,7 +22,7 @@ export function loadPacks() {
 
 export function loadFactions() {
     return {
-        types: ['REQUEST_FACTIONS', 'RECEIVE_FACTIONS', 'FACTIONS_FAILURE'],
+        types: ['REQUEST_FACTIONS', 'RECEIVE_FACTIONS'],
         shouldCallAPI: (state) => {
             return !state.cards.factions;  
         },
