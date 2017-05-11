@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import _ from 'underscore';
 
 export function loadDecks() {
     return {
@@ -7,6 +8,18 @@ export function loadDecks() {
             return !state.deck.decks;
         },
         callAPI: () => $.ajax('/api/decks')
+    };
+}
+
+export function loadDeck(deckId) {
+    return {
+        types: ['REQUEST_DECK', 'RECEIVE_DECK'],
+        shouldCallAPI: (state) => {
+            return !_.any(state.deck.decks, deck => {
+                deck._id === deckId;
+            });
+        },
+        callAPI: () => $.ajax('/api/decks/' + deckId)
     };
 }
 

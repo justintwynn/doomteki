@@ -9,6 +9,12 @@ module.exports.init = function(server) {
             return res.status(401).send({ message: 'Unauthorized' });
         }
 
+        console.info(req.params.id);
+
+        if(!req.params.id || req.params.id === '') {
+            return res.status(404).send({ message: 'No such deck' });
+        }
+
         db.collection('decks').findOne({ _id: ObjectId.createFromHexString(req.params.id) }, function(err, deck) {
             if(err) {
                 res.send({ success: false, message: 'Error fetching deck' });

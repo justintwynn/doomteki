@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import DeckSummary from './DeckSummary.jsx';
 import DeckEditor from './DeckEditor.jsx';
+import AlertPanel from './SiteComponents/AlertPanel.jsx';
 
 import * as actions from './actions';
 
@@ -11,34 +12,17 @@ class InnerEditDeck extends React.Component {
     constructor() {
         super();
 
-        this.state = {
-            error: '',
-            faction: {},
-            loaded: false
-        };
-
         this.onEditDeck = this.onEditDeck.bind(this);
-        this.onDeckChange = this.onDeckChange.bind(this);
     }
 
     componentWillMount() {
-        $.get('/api/decks/' + this.props.deckId)
-            .done(data => {
-                if(!data.success) {
-                    this.setState({ error: data.message });
-                    return;
-                }
-
-                var deck = data.deck;
-
-                this.setState({
-                    loaded: true,
-                    deck: deck
-                });
-            })
-            .fail(() => {
-                this.setState({ error: 'Could not communicate with the server.  Please try again later.' });
-            });
+        if(this.props.deckId) {
+            console.info('loading', this.props.deckId);
+            return this.props.loadDeck(this.props.deckId);
+        } else if(this.props.deck) {
+            console.info('selected', this.props.deck._id);
+            return this.props.loadDeck(this.props.deck._id);
+        }
     }
 
     onEditDeck(deck) {
@@ -67,50 +51,47 @@ class InnerEditDeck extends React.Component {
         });
     }
 
-    onDeckChange(deck) {
-        this.setState({
-            deckName: deck.name,
-            faction: deck.selectedFaction,
-            agenda: deck.selectedAgenda,
-            plotCards: deck.plotCards,
-            drawCards: deck.drawCards,
-            bannerCards: deck.bannerCards
-        });
-    }
-
     render() {
-        var errorBar = this.state.error ? <div className='alert alert-danger' role='alert'>{this.state.error}</div> : null;
+        let content;
 
-        return (
-            <div>
-                {errorBar}
-                {this.state.loaded ?
-                    <div>
+        if(this.props.loading) {
+            content = <div>Loading decks from the server...</div>;
+        } else if(this.props.apiError) {
+            content = <AlertPanel type='error' message={ this.props.apiError } />;
+        } else {
+            content = (<div>
                         <DeckEditor agendas={ this.props.agendas } cards={ this.props.cards } packs={ this.props.packs }
-                            deck={ this.state.deck } mode='Save' onDeckChange={ this.onDeckChange } onDeckSave={ this.onEditDeck } />
-                        <DeckSummary className='col-sm-6 right-pane' cards={ this.props.cards } name={ this.state.deckName } agenda={ this.state.agenda }
-                            faction={ this.state.faction } plotCards={ this.state.plotCards } drawCards={ this.state.drawCards } bannerCards={ this.state.bannerCards } />
-                    </div> :
-                    <div>Loading deck...</div>}
-            </div>);
+                            deck={ this.props.deck } mode='Save' onDeckChange={ this.onDeckChange } onDeckSave={ this.onEditDeck } />
+                        <DeckSummary className='col-sm-6 right-pane' cards={ this.props.cards } deck={ this.props.deck } />
+                    </div>);
+        }
+
+        return content;
     }
 }
 
 InnerEditDeck.displayName = 'InnerEditDeck';
 InnerEditDeck.propTypes = {
     agendas: React.PropTypes.array,
+    apiError: React.PropTypes.string,
     cards: React.PropTypes.array,
-    deckId: React.PropTypes.string.isRequired,
+    deck: React.PropTypes.object,
+    deckId: React.PropTypes.string,
     factions: React.PropTypes.array,
+    loadDeck: React.PropTypes.func,
+    loading: React.PropTypes.bool,
     navigate: React.PropTypes.func,
     packs: React.PropTypes.array
 };
 
 function mapStateToProps(state) {
     return {
+        apiError: state.api.message,
         agendas: state.cards.agendas,
         cards: state.cards.cards,
+        deck: state.deck.selectedDeck,
         factions: state.cards.factions,
+        loading: state.api.loading,
         socket: state.socket.socket
     };
 }

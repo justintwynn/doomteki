@@ -16,7 +16,6 @@ class InnerDecks extends React.Component {
 
         this.onDeleteClick = this.onDeleteClick.bind(this);
         this.onConfirmDeleteClick = this.onConfirmDeleteClick.bind(this);
-        this.onEditClick = this.onEditClick.bind(this);
 
         this.state = {
             decks: [],
@@ -37,9 +36,7 @@ class InnerDecks extends React.Component {
     onEditClick(event) {
         event.preventDefault();
 
-        var selectedDeck = this.state.decks[this.state.selectedDeck];
-
-        this.props.navigate('/decks/edit/' + selectedDeck._id);
+        this.props.navigate('/decks/edit');
     }
 
     onConfirmDeleteClick(event) {
@@ -76,8 +73,8 @@ class InnerDecks extends React.Component {
         var index = 0;
 
         var decks = _.map(this.props.decks, deck => {
-            var row = (<DeckRow key={deck.name + index.toString()} deck={ deck } 
-                                onClick={ () => this.props.selectDeck(deck) } 
+            var row = (<DeckRow key={deck.name + index.toString()} deck={ deck }
+                                onClick={ () => this.props.selectDeck(deck) }
                                 active={ this.props.selectedDeck && deck._id === this.props.selectedDeck._id } />);
 
             index++;
@@ -96,7 +93,7 @@ class InnerDecks extends React.Component {
         if(this.props.selectedDeck) {
             deckInfo = (<div className='col-sm-6'>
                 <div className='btn-group'>
-                    <button className='btn btn-primary' onClick={this.onEditClick}>Edit</button>
+                    <button className='btn btn-primary' onClick={ this.onEditClick.bind(this) }>Edit</button>
                     <button className='btn btn-primary' onClick={this.onDeleteClick}>Delete</button>
                     {this.state.showDelete ?
                         <button className='btn btn-danger' onClick={this.onConfirmDeleteClick}>Delete</button> :
@@ -117,7 +114,7 @@ class InnerDecks extends React.Component {
                 <div>
                     <div className='col-sm-6'>
                         <Link className='btn btn-primary' href='/decks/add'>Add new deck</Link>
-                        <div className='deck-list'>{ this.props.decks.length === 0 ? 'You have no decks, try adding one.' : deckList }</div>
+                        <div className='deck-list'>{ !this.props.decks || this.props.decks.length === 0 ? 'You have no decks, try adding one.' : deckList }</div>
                     </div>
                     { deckInfo }
                 </div>);

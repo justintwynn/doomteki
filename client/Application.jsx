@@ -182,24 +182,32 @@ class App extends React.Component {
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
 
+    isNumeric(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
     render() {
-        var rightMenu = this.props.loggedIn ? authedMenu : notAuthedMenu;
-        var component = {};
+        let rightMenu = this.props.loggedIn ? authedMenu : notAuthedMenu;
+        let component = {};
 
-        var path = this.props.path;
-        var pathArg = undefined;
-        var idArg = undefined;
-        var tokenArg = undefined;
-        var index = path.indexOf('/decks/edit');
+        let path = this.props.path;
+        let argIndex = path.lastIndexOf('/');
+        let arg;
 
-        if(index !== -1) {
-            path = path.substr(index, 11);
-            pathArg = this.props.path.substr(11 + 1);
+        if(argIndex !== -1) {
+            arg = path.substring(argIndex + 1);
+
+            if(!this.isNumeric(arg)) {
+                arg = undefined;
+            }
         }
+
+        let idArg;
+        let tokenArg;
+        let index;
 
         index = path.indexOf('/reset-password');
         if(index !== -1) {
-            path = path.substr(index, 15);
             idArg = this.getUrlParameter('id');
             tokenArg = this.getUrlParameter('token');
         }
@@ -226,7 +234,7 @@ class App extends React.Component {
                 component = <AddDeck />;
                 break;
             case '/decks/edit':
-                component = <EditDeck deckId={pathArg} />;
+                component = <EditDeck deckId={ arg }/>;
                 break;
             case '/play':
                 component = (this.props.currentGame && this.props.currentGame.started) ? <GameBoard /> : <GameLobby />;
@@ -310,7 +318,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     let boundActions = bindActionCreators(actions, dispatch);
     boundActions.dispatch = dispatch;
-    
+
     return boundActions;
 }
 
