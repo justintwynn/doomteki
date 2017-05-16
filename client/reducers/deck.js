@@ -1,4 +1,20 @@
 import _ from 'underscore';
+import {validateDeck} from '../deck-validator.js';
+
+function selectDeck(state, deck) {
+    if(state.decks && state.decks.length !== 0) {
+        state.selectedDeck = deck;
+    } else {
+        delete state.selectedDeck;
+    }
+    return state;
+}
+
+function validateDecks(decks) {
+    _.each(decks, deck => {
+        deck.validation = validateDeck(deck);
+    });
+}
 
 export default function(state = {}, action) {
     let newState;
@@ -9,10 +25,10 @@ export default function(state = {}, action) {
                 decks: action.response.decks
             });
 
-            if(newState.decks && newState.decks.length !== 0) {
-                newState.selectedDeck = newState.decks[0];
-            } else {
-                delete newState.selectedDeck;
+            newState = selectDeck(newState, newState.decks[0]);
+
+            if(newState.decks) {
+                validateDecks(newState.decks);
             }
 
             return newState;
@@ -34,10 +50,10 @@ export default function(state = {}, action) {
                 newState.push(action.response.deck);
             }
 
-            if(newState.decks && newState.decks.length !== 0) {
-                newState.selectedDeck = action.response.deck;
-            } else {
-                delete newState.selectedDeck;
+            newState = selectDeck(newState, action.response.deck);
+
+            if(newState.decks) {
+                validateDecks(newState.decks);
             }
 
             return newState;

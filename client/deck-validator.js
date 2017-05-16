@@ -1,7 +1,7 @@
 import _ from 'underscore';
 
 function getDeckCount(deck) {
-    var count = 0;
+    let count = 0;
 
     _.each(deck, function(card) {
         count += card.count;
@@ -46,32 +46,33 @@ function isBannerCard(bannerCode, faction) {
 }
 
 export function validateDeck(deck) {
-    var plotCount = getDeckCount(deck.plotCards);
-    var drawCount = getDeckCount(deck.drawCards);
-    var status = 'Valid';
-    var requiredPlots = 7;
-    var isRains = false;
-    var extendedStatus = [];
-    var requiredDraw = 60;
+    let plotCount = getDeckCount(deck.plotCards);
+    let drawCount = getDeckCount(deck.drawCards);
+    let status = 'Valid';
+    let requiredPlots = 7;
+    let isRains = false;
+    let extendedStatus = [];
+    let requiredDraw = 60;
+
     if(_.any(deck.drawCards, card => {
         return !card.card.faction_code;
     })) {
         status = 'Invalid';
         extendedStatus.push('Deck contains invalid cards');
-        
+
         return { status: status, plotCount: plotCount, drawCount: drawCount, extendedStatus: extendedStatus };
     }
-    var combined = _.union(deck.plotCards, deck.drawCards);
 
-    // Alliance 
+    let combined = _.union(deck.plotCards, deck.drawCards);
+    // Alliance
     if(deck.agenda && deck.agenda.code === '06018') {
         requiredDraw = 75;
         _.each(deck.bannerCards, banner => {
-            var hasLoyalBannerCard = false;
-            var banneredCards = _.reduce(combined, (memo, card) => {
-                var faction = card.card.faction_code.toLowerCase();
+            let hasLoyalBannerCard = false;
+            let banneredCards = _.reduce(combined, (memo, card) => {
+                let faction = card.card.faction_code.toLowerCase();
                 if(isBannerCard(banner.code, faction) && !card.card.is_loyal) {
-                    return memo + card.count;          
+                    return memo + card.count;
                 }
                 if(isBannerCard(banner.code, faction) && card.card.is_loyal) {
                     hasLoyalBannerCard = true;
@@ -86,9 +87,9 @@ export function validateDeck(deck) {
                 status = 'Invalid';
                 extendedStatus.push('Has a loyal banner card');
             }
-        });   
+        });
     }
-    
+
     // "The Rains of Castamere"
     if(deck.agenda && deck.agenda.code === '05045') {
         isRains = true;
@@ -103,7 +104,7 @@ export function validateDeck(deck) {
     if(plotCount < requiredPlots) {
         status = 'Invalid';
         extendedStatus.push('Too few plot cards');
-    }  
+    }
 
     if(_.any(combined, card => {
         if(card.count > card.card.deck_limit) {
@@ -123,11 +124,11 @@ export function validateDeck(deck) {
     }
 
     if(isRains) {
-        var schemePlots = _.filter(deck.plotCards, plot => {
+        let schemePlots = _.filter(deck.plotCards, plot => {
             return hasTrait(plot, 'Scheme');
         });
 
-        var groupedSchemes = _.groupBy(schemePlots, plot => {
+        let groupedSchemes = _.groupBy(schemePlots, plot => {
             return plot.card.code;
         });
 
@@ -138,7 +139,7 @@ export function validateDeck(deck) {
             status = 'Invalid';
         }
     }
-   
+
     // Kings of summer
     if(deck.agenda && deck.agenda.code === '04037' && _.any(deck.plotCards, card => {
         return hasTrait(card, 'winter');
@@ -173,11 +174,11 @@ export function validateDeck(deck) {
     }
 
     // Alliance
-    var bannerCount = 0;
+    let bannerCount = 0;
 
     if((!deck.agenda || deck.agenda && deck.agenda.code !== '06018') && !_.all(combined, card => {
-        var faction = card.card.faction_code.toLowerCase();
-        var bannerCard = false;
+        let faction = card.card.faction_code.toLowerCase();
+        let bannerCard = false;
 
         if(deck.agenda && isBannerCard(deck.agenda.code, faction) && !card.card.is_loyal) {
             bannerCount += card.count;

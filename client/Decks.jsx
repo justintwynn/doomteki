@@ -73,7 +73,7 @@ class InnerDecks extends React.Component {
         var index = 0;
 
         var decks = _.map(this.props.decks, deck => {
-            var row = (<DeckRow key={deck.name + index.toString()} deck={ deck }
+            var row = (<DeckRow key={ deck.name + index.toString() } deck={ deck }
                                 onClick={ () => this.props.selectDeck(deck) }
                                 active={ this.props.selectedDeck && deck._id === this.props.selectedDeck._id } />);
 
@@ -84,7 +84,7 @@ class InnerDecks extends React.Component {
 
         var deckList = (
             <div>
-                {decks}
+                { decks }
             </div>
         );
 
@@ -99,7 +99,7 @@ class InnerDecks extends React.Component {
                         <button className='btn btn-danger' onClick={this.onConfirmDeleteClick}>Delete</button> :
                         null}
                 </div>
-                <DeckSummary deck={ this.props.selectedDeck } cards={this.props.cards} />
+                <DeckSummary deck={ this.props.selectedDeck } cards={ this.props.cards } />
             </div>);
         }
 
@@ -139,6 +139,7 @@ InnerDecks.propTypes = {
 function mapStateToProps(state) {
     return {
         apiError: state.api.message,
+        cards: state.cards.cards,
         decks: state.deck.decks,
         loading: state.api.loading,
         selectedDeck: state.deck.selectedDeck

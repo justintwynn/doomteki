@@ -44,7 +44,7 @@ export default function callAPIMiddleware({ dispatch, getState }) {
                         status: 200,
                         message: response.message,
                         type: 'API_FAILURE'
-                    }));                    
+                    }));
                 }
 
                 return dispatch(Object.assign({}, payload, {
