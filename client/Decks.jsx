@@ -140,9 +140,9 @@ function mapStateToProps(state) {
     return {
         apiError: state.api.message,
         cards: state.cards.cards,
-        decks: state.deck.decks,
+        decks: state.cards.decks,
         loading: state.api.loading,
-        selectedDeck: state.deck.selectedDeck
+        selectedDeck: state.cards.selectedDeck
     };
 }
 

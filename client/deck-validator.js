@@ -45,7 +45,25 @@ function isBannerCard(bannerCode, faction) {
     return false;
 }
 
-export function validateDeck(deck) {
+function isCardInReleasedPack(packs, card) {
+    let pack = _.find(packs, pack => {
+        return card.card.pack_code === pack.code;
+    });
+
+    if(!pack) {
+        return false;
+    }
+
+    let releaseDate = pack.available || pack.date_release;
+
+    if(!releaseDate) {
+        return false;
+    }
+
+    return releaseDate <= new Date();
+}
+
+export function validateDeck(deck, packs) {
     let plotCount = getDeckCount(deck.plotCards);
     let drawCount = getDeckCount(deck.drawCards);
     let status = 'Valid';
@@ -53,6 +71,7 @@ export function validateDeck(deck) {
     let isRains = false;
     let extendedStatus = [];
     let requiredDraw = 60;
+    let isValid = true;
 
     if(_.any(deck.drawCards, card => {
         return !card.card.faction_code;
@@ -60,7 +79,7 @@ export function validateDeck(deck) {
         status = 'Invalid';
         extendedStatus.push('Deck contains invalid cards');
 
-        return { status: status, plotCount: plotCount, drawCount: drawCount, extendedStatus: extendedStatus };
+        return { status: status, plotCount: plotCount, drawCount: drawCount, extendedStatus: extendedStatus, isValid: false };
     }
 
     let combined = _.union(deck.plotCards, deck.drawCards);
@@ -81,10 +100,12 @@ export function validateDeck(deck) {
             }, 0);
             if(banneredCards < 12) {
                 status = 'Invalid';
+                isValid = false;
                 extendedStatus.push('Too few banner cards for ' + banner.label);
             }
             if(hasLoyalBannerCard) {
                 status = 'Invalid';
+                isValid = false;
                 extendedStatus.push('Has a loyal banner card');
             }
         });
@@ -98,11 +119,13 @@ export function validateDeck(deck) {
 
     if(drawCount < requiredDraw) {
         status = 'Invalid';
+        isValid = false;
         extendedStatus.push('Too few draw cards');
     }
 
     if(plotCount < requiredPlots) {
         status = 'Invalid';
+        isValid = false;
         extendedStatus.push('Too few plot cards');
     }
 
@@ -115,12 +138,14 @@ export function validateDeck(deck) {
 
         return false;
     })) {
+        isValid = false;
         status = 'Invalid';
     }
 
     if(plotCount > requiredPlots) {
         extendedStatus.push('Too many plots');
         status = 'Invalid';
+        isValid = false;
     }
 
     if(isRains) {
@@ -137,6 +162,7 @@ export function validateDeck(deck) {
         })) {
             extendedStatus.push('Rains requires 5 different scheme plots');
             status = 'Invalid';
+            isValid = false;
         }
     }
 
@@ -146,6 +172,7 @@ export function validateDeck(deck) {
     })) {
         extendedStatus.push('Kings of Summer cannot include Winter plots');
         status = 'Invalid';
+        isValid = false;
     }
 
     // Kings of winter
@@ -154,6 +181,7 @@ export function validateDeck(deck) {
     })) {
         extendedStatus.push('Kings of Winter cannot include Summer plots');
         status = 'Invalid';
+        isValid = false;
     }
 
     // Fealty
@@ -161,6 +189,7 @@ export function validateDeck(deck) {
         return card.card.faction_code === 'neutral' ? counter + card.count : counter;
     }, 0) > 15) {
         status = 'Invalid';
+        isValid = false;
         extendedStatus.push('You cannot include more than 15 neutral cards in a deck with Fealty');
     }
 
@@ -170,12 +199,12 @@ export function validateDeck(deck) {
         return card.card.is_loyal && card.card.type_code === 'character';
     })) {
         status = 'Invalid';
+        isValid = false;
         extendedStatus.push('The Brotherhood Without Banners cannot include loyal characters');
     }
 
     // Alliance
     let bannerCount = 0;
-
     if((!deck.agenda || deck.agenda && deck.agenda.code !== '06018') && !_.all(combined, card => {
         let faction = card.card.faction_code.toLowerCase();
         let bannerCard = false;
@@ -189,12 +218,23 @@ export function validateDeck(deck) {
     })) {
         extendedStatus.push('Too many out of faction cards');
         status = 'Invalid';
+        isValid = false;
     }
 
     if(bannerCount > 0 && bannerCount < 12) {
         extendedStatus.push('Not enough banner faction cards');
         status = 'Invalid';
+        isValid = false;
     }
 
-    return { status: status, plotCount: plotCount, drawCount: drawCount, extendedStatus: extendedStatus };
+    if(isValid) {
+        if(_.any(combined, card => {
+            return isCardInReleasedPack(packs, card);
+        })) {
+            status = 'Unreleased Cards';
+            extendedStatus.push('Deck has cards that are not yet released');
+        }
+    }
+
+    return { status: status, plotCount: plotCount, drawCount: drawCount, extendedStatus: extendedStatus, isValid: isValid };
 }

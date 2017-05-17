@@ -92,7 +92,7 @@ function mapStateToProps(state) {
         apiError: state.api.message,
         agendas: state.cards.agendas,
         cards: state.cards.cards,
-        deck: state.deck.selectedDeck,
+        deck: state.cards.selectedDeck,
         factions: state.cards.factions,
         loading: state.api.loading,
         socket: state.socket.socket
