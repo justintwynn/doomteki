@@ -9,8 +9,6 @@ module.exports.init = function(server) {
             return res.status(401).send({ message: 'Unauthorized' });
         }
 
-        console.info(req.params.id);
-
         if(!req.params.id || req.params.id === '') {
             return res.status(404).send({ message: 'No such deck' });
         }
