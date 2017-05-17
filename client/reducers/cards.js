@@ -22,12 +22,17 @@ export default function(state = {}, action) {
 
     switch(action.type) {
         case 'RECEIVE_CARDS':
-            var agendas = _.filter(action.response.cards, function(card) {
+            var agendas = _.filter(action.response.cards, card => {
                 return card.type_code === 'agenda' && card.pack_code !== 'VDS';
             });
+            var banners = _.filter(agendas, card => {
+                return _.contains(card.label, 'Banner of the');
+            });
+
             return Object.assign({}, state, {
                 cards: action.response.cards,
-                agendas: agendas
+                agendas: agendas,
+                banners: banners
             });
         case 'RECEIVE_PACKS':
             return Object.assign({}, state, {
@@ -72,7 +77,7 @@ export default function(state = {}, action) {
             if(!_.any(newState.decks, deck => {
                 return deck._id === action.response.deck._id;
             })) {
-                newState.push(action.response.deck);
+                newState.decks.push(action.response.deck);
             }
 
             newState = selectDeck(newState, action.response.deck);

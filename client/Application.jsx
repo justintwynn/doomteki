@@ -43,6 +43,26 @@ var leftMenu = [
 ];
 
 class App extends React.Component {
+    constructor(props) {
+        super(props);
+
+        let boundActionCreators = bindActionCreators(actions, this.props.dispatch);
+
+        this.paths = {
+            '/': () => <Lobby />,
+            '/login': () => <Login />,
+            '/register': () => <Register />,
+            '/decks': () => <Decks { ...boundActionCreators } />,
+            '/decks/add': () => <AddDeck />,
+            '/decks/edit': params => <ditDeck deckId={ params.deckId }/>,
+            '/play': () => (this.props.currentGame && this.props.currentGame.started) ? <GameBoard /> : <GameLobby />,
+            '/about': () => <About />,
+            '/forgot': () => <ForgotPassword />,
+            '/reset-password': params => <ResetPassword id={ params.id } token={ params.token } />,
+            '/profile': () => <Profile />
+        };
+    }
+
     componentWillMount() {
         this.props.loadCards();
         this.props.loadPacks();
@@ -196,10 +216,13 @@ class App extends React.Component {
 
         if(argIndex !== -1) {
             arg = path.substring(argIndex + 1);
+            path = path.substring(0, argIndex);
+        }
 
-            if(!this.isNumeric(arg)) {
-                arg = undefined;
-            }
+        let page = this.paths[path];
+        if(!page) {
+            page = this.paths[this.props.path];
+            arg = undefined;
         }
 
         let idArg;

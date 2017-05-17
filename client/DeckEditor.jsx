@@ -26,16 +26,6 @@ class DeckEditor extends React.Component {
             bannerList: '',
             deckName: props.deck ? props.deck.name : 'New Deck',
             drawCards: props.deck ? props.deck.drawCards : undefined,
-            banners: [
-                { name: 'Banner of the Dragon', value: 'Banner of the Dragon'},
-                { name: 'Banner of the Kraken', value:  'Banner of the Kraken'},
-                { name: 'Banner of the Lion', value: 'Banner of the Lion'},
-                { name: 'Banner of the Rose', value: 'Banner of the Rose'},
-                { name: 'Banner of the Stag', value: 'Banner of the Stag'},
-                { name: 'Banner of the Sun', value: 'Banner of the Sun'},
-                { name: 'Banner of the Watch', value: 'Banner of the Watch'},
-                { name: 'Banner of the Wolf', value: 'Banner of the Wolf'}
-            ],
             numberToAdd: 1,
             plotCards: props.deck ? props.deck.plotCards : undefined,
             bannerCards: props.deck ? props.deck.bannerCards : undefined,
@@ -129,7 +119,7 @@ class DeckEditor extends React.Component {
 
         var banner = _.find(this.props.agendas, function(agenda) {
             return agenda.name === event.target.value;
-        });      
+        });
         this.setState({ selectedBanner: banner }, () => this.raiseDeckChanged());
     }
 
@@ -138,7 +128,7 @@ class DeckEditor extends React.Component {
         list.push(card);
         this.setState({bannerCards: list});
     }
-    
+
     onAddBanner(event) {
         event.preventDefault();
         this.addBanner(this.state.selectedBanner);
@@ -166,7 +156,7 @@ class DeckEditor extends React.Component {
     }
 
     onBannerListChange(event) {
-       
+
         var split = event.target.value.split('\n');
         this.setState({bannerCards: []}, () => {
             _.each(split, line => {
@@ -305,9 +295,9 @@ class DeckEditor extends React.Component {
 
                     {this.state.bannersVisible &&
                     <div>
-                        <Select name='banners' label ='Banners' labelClass='col-sm-3' fieldClass='col-sm-9' options={this.state.banners}
+                        <Select name='banners' label ='Banners' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.banners }
                             onChange={this.onBannerChange} value={this.state.selectedBanner.name} blankOption={{ name: '- Select -', code: '' }} button={{ text:'Add', onClick: this.onAddBanner}} />
-                        <TextArea label='Banners' labelClass='col-sm-3' fieldClass='col-sm-9' disabled='disabled' rows='2' value={this.state.bannerList}
+                        <TextArea label='Banners' labelClass='col-sm-3' fieldClass='col-sm-9' disabled='disabled' rows='2' value={ this.state.bannerList }
                             onChange={this.onBannerListChange} />
                     </div>
                     }
@@ -336,6 +326,7 @@ class DeckEditor extends React.Component {
 DeckEditor.displayName = 'DeckEditor';
 DeckEditor.propTypes = {
     agendas: React.PropTypes.array,
+    banners: React.PropTypes.array,
     cards: React.PropTypes.array,
     deck: React.PropTypes.shape({
         agenda: React.PropTypes.object,
