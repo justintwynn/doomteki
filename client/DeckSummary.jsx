@@ -1,7 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import _ from 'underscore';
-import $ from 'jquery';
 
 import StatusPopOver from './StatusPopOver.jsx';
 
