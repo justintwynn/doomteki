@@ -17,23 +17,6 @@ class DeckSummary extends React.Component {
         };
     }
 
-    componentDidUpdate() {
-        if(this.props.deck.validation.status === 'Valid') {
-            if($(this.refs.popover).popover) {
-                $(this.refs.popover).popover('disable');
-            }
-
-            return;
-        }
-
-        var popoverContent = $($.parseHTML(ReactDOM.findDOMNode(this.refs.popoverContent).outerHTML)).removeClass('hidden').html();
-        // XXX Neccessary until I figure out how to make this work for tests
-        if($(this.refs.popover).popover) {
-            $(this.refs.popover).popover({ trigger: 'hover', html: true });
-            $(this.refs.popover).data('bs.popover').options.content = popoverContent;
-        }
-    }
-
     onCardMouseOver(event) {
         var cardToDisplay = _.filter(this.props.cards, card => {
             return event.target.innerText === card.label;
@@ -103,8 +86,8 @@ class DeckSummary extends React.Component {
                         <div ref='drawCount'>Draw deck: { this.props.deck.validation.drawCount } cards</div>
                         <div ref='plotCount'>Plot deck: { this.props.deck.validation.plotCount } cards</div>
                         <div className={ this.props.deck.validation.status === 'Valid' ? 'text-success' : 'text-danger' }>
-                            <span ref='popover'>{ this.props.deck.validation.status }</span>
-                            <StatusPopOver ref='popoverContent' list={ this.props.deck.validation.extendedStatus } />
+                            <StatusPopOver status={ this.props.deck.validation.status } list={ this.props.deck.validation.extendedStatus }
+                                            show={ this.props.deck.validation.status !== 'Valid' } />
                         </div>
                     </div>
                 </div>
