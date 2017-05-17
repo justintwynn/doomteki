@@ -21,10 +21,16 @@ class StatusPopOver extends React.Component {
     }
 
     updateProps(props) {
+        let popovers = $('[data-toggle="popover"]');
+
+        if(!popovers || !popovers.popover) {
+            return;
+        }
+
         if(props.show && !this.state.showing) {
-            $('[data-toggle="popover"]').popover();
+            popovers.popover();
         } else if(!props.show && this.state.showing) {
-            $('[data-toggle="popover"]').popover('destroy');
+            popovers.popover('destroy');
         }
 
         this.setState({ showing: props.show });
