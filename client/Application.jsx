@@ -214,15 +214,18 @@ class App extends React.Component {
         let argIndex = path.lastIndexOf('/');
         let arg;
 
-        if(argIndex !== -1) {
-            arg = path.substring(argIndex + 1);
-            path = path.substring(0, argIndex);
-        }
-
         let page = this.paths[path];
         if(!page) {
-            page = this.paths[this.props.path];
-            arg = undefined;
+            if(argIndex !== -1 && argIndex !== 0) {
+                arg = path.substring(argIndex + 1);
+                path = path.substring(0, argIndex);
+            }
+
+            let page = this.paths[path];
+            if(!page) {
+                page = this.paths[this.props.path];
+                arg = undefined;
+            }
         }
 
         let idArg;
