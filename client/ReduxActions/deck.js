@@ -29,3 +29,10 @@ export function selectDeck(deck) {
         deck: deck
     };
 }
+
+export function updateDeck(deck) {
+    return {
+        type: 'UPDATE_DECK',
+        deck: deck
+    };
+}

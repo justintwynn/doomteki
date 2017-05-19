@@ -1,13 +1,16 @@
 import React from 'react';
 import _ from 'underscore';
 import $ from 'jquery';
+import {connect} from 'react-redux';
 
 import Input from './FormComponents/Input.jsx';
 import Select from './FormComponents/Select.jsx';
 import Typeahead from './FormComponents/Typeahead.jsx';
 import TextArea from './FormComponents/TextArea.jsx';
 
-class DeckEditor extends React.Component {
+import * as actions from './actions';
+
+class InnerDeckEditor extends React.Component {
     constructor(props) {
         super(props);
 
@@ -23,15 +26,9 @@ class DeckEditor extends React.Component {
 
         this.state = {
             cardList: '',
+            deck: this.copyDeck(props.deck),
             bannerList: '',
-            deckName: props.deck ? props.deck.name : 'New Deck',
-            drawCards: props.deck ? props.deck.drawCards : undefined,
             numberToAdd: 1,
-            plotCards: props.deck ? props.deck.plotCards : undefined,
-            bannerCards: props.deck ? props.deck.bannerCards : undefined,
-            selectedAgenda: props.deck ? props.deck.agenda : undefined,
-            bannersVisible: (props.deck && props.deck.agenda && props.deck.agenda.code === '06018') || false,
-            selectedFaction: props.deck ? props.deck.faction : props.factions ? props.factions[0] : undefined,
             validation: {
                 deckname: '',
                 cardToAdd: ''
@@ -62,14 +59,6 @@ class DeckEditor extends React.Component {
 
             this.setState({ cardList: cardList });
         }
-
-        this.raiseDeckChanged();
-    }
-
-    raiseDeckChanged() {
-        if(this.props.onDeckChange) {
-            this.props.onDeckChange(this.buildDeck());
-        }
     }
 
     buildDeck() {
@@ -83,19 +72,38 @@ class DeckEditor extends React.Component {
         };
     }
 
-    onChange(field, event) {
-        var newState = {};
+    // XXX One could argue this is a bit hacky, because we're updating the innards of the deck object, react doesn't update components that use it unless we change the reference itself
+    copyDeck(deck) {
+        if(!deck) {
+            return { name: 'New Deck '};
+        }
 
-        newState[field] = event.target.value;
-        this.setState(newState, () => this.raiseDeckChanged());
+        return {
+            name: deck.name,
+            plotCards: deck.plotCards,
+            drawCards: deck.drawCards,
+            bannerCards: deck.bannerCards,
+            faction: deck.faction,
+            agenda: deck.agenda
+        };
     }
 
-    onFactionChange(event) {
-        var faction = _.find(this.props.factions, (faction) => {
-            return faction.value === event.target.value;
-        });
+    onChange(field, event) {
+        let deck = this.copyDeck(this.state.deck);
 
-        this.setState({ selectedFaction: faction }, () => this.raiseDeckChanged());
+        deck[field] = event.target.value;
+
+        this.setState({ deck: deck });
+        this.props.updateDeck(deck);
+    }
+
+    onFactionChange(selectedFaction) {
+        let deck = this.copyDeck(this.state.deck);
+
+        deck.faction = selectedFaction;
+
+        this.setState({ deck: deck });
+        this.props.updateDeck(deck);
     }
 
     onAgendaChange(event) {
@@ -273,24 +281,24 @@ class DeckEditor extends React.Component {
 
     onSaveClick(event) {
         event.preventDefault();
-
-        if(this.props.onDeckSave) {
-            this.props.onDeckSave(this.buildDeck());
-        }
     }
 
     render() {
+        if(!this.props.deck) {
+            return <div>Waiting for deck...</div>;
+        }
+
         return (
             <div className='col-sm-6'>
                 <h2>Deck Editor</h2>
                 <h4>Either type the cards manually into the box below, add the cards one by one using the card box and autocomplete or for best results, copy and paste a decklist from <a href='http://thronesdb.com' target='_blank'>Thrones DB</a> into the box below.</h4>
                 <form className='form form-horizontal'>
                     <Input name='deckName' label='Deck Name' labelClass='col-sm-3' fieldClass='col-sm-9' placeholder='Deck Name'
-                        type='text' onChange={this.onChange.bind(this, 'deckName')} value={ this.state.deckName } />
+                        type='text' onChange={this.onChange.bind(this, 'name')} value={ this.state.deck.name } />
                     <Select name='faction' label='Faction' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.factions }
-                        onChange={ this.onFactionChange } value={ this.state.selectedFaction ? this.state.selectedFaction.value : undefined } />
+                        onChange={ this.onFactionChange } value={ this.state.deck.faction ? this.state.deck.faction.value : undefined } />
                     <Select name='agenda' label='Agenda' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.agendas }
-                        onChange={ this.onAgendaChange } value={ this.state.selectedAgenda ? this.state.selectedAgenda.code : undefined }
+                        onChange={ this.onAgendaChange } value={ this.state.deck.agenda ? this.state.deck.agenda.code : undefined }
                         valueKey='code' nameKey='label' blankOption={ { label: '- Select -', code: '' } } />
 
                     {this.state.bannersVisible &&
@@ -323,24 +331,29 @@ class DeckEditor extends React.Component {
     }
 }
 
-DeckEditor.displayName = 'DeckEditor';
-DeckEditor.propTypes = {
+InnerDeckEditor.displayName = 'DeckEditor';
+InnerDeckEditor.propTypes = {
     agendas: React.PropTypes.array,
     banners: React.PropTypes.array,
     cards: React.PropTypes.array,
-    deck: React.PropTypes.shape({
-        agenda: React.PropTypes.object,
-        bannerCards: React.PropTypes.array,
-        drawCards: React.PropTypes.array,
-        faction: React.PropTypes.object,
-        name: React.PropTypes.string,
-        plotCards: React.PropTypes.array
-    }),
+    deck: React.PropTypes.object,
     factions: React.PropTypes.array,
     mode: React.PropTypes.string,
-    onDeckChange: React.PropTypes.func,
-    onDeckSave: React.PropTypes.func,
-    packs: React.PropTypes.array
+    packs: React.PropTypes.array,
+    updateDeck: React.PropTypes.func
 };
+
+function mapStateToProps(state) {
+    return {
+        apiError: state.api.message,
+        cards: state.cards.cards,
+        deck: state.cards.selectedDeck,
+        decks: state.cards.decks,
+        factions: state.cards.factions,
+        loading: state.api.loading
+    };
+}
+
+const DeckEditor = connect(mapStateToProps, actions)(InnerDeckEditor);
 
 export default DeckEditor;

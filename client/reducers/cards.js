@@ -88,9 +88,25 @@ export default function(state = {}, action) {
 
             return newState;
         case 'SELECT_DECK':
-            return Object.assign({}, state, {
+            newState = Object.assign({}, state, {
                 selectedDeck: action.deck
             });
+
+            if(newState.selectedDeck) {
+                validateDecks([newState.selectedDeck], newState.packs);
+            }
+
+            return newState;
+        case 'UPDATE_DECK':
+            newState = Object.assign({}, state, {
+                selectedDeck: action.deck
+            });
+
+            if(newState.selectedDeck) {
+                validateDecks([newState.selectedDeck], newState.packs);
+            }
+
+            return newState;
         default:
             return state;
     }
