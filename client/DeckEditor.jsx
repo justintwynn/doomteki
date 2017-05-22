@@ -29,6 +29,7 @@ class InnerDeckEditor extends React.Component {
             deck: this.copyDeck(props.deck),
             numberToAdd: 1,
             showBanners: false,
+            selectedBanner: {},
             validation: {
                 deckname: '',
                 cardToAdd: ''
@@ -300,9 +301,10 @@ class InnerDeckEditor extends React.Component {
                     { this.state.showBanners &&
                     <div>
                         <Select name='banners' label ='Banners' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.banners }
-                            onChange={this.onBannerChange} value={this.state.selectedBanner.name} blankOption={{ name: '- Select -', code: '' }} button={{ text:'Add', onClick: this.onAddBanner}} />
+                            onChange={ this.onBannerChange } value={ this.state.selectedBanner.name }
+                            blankOption={ { name: '- Select -', code: '' } } button={ { text:'Add', onClick: this.onAddBanner} } />
                         <TextArea label='Banners' labelClass='col-sm-3' fieldClass='col-sm-9' disabled='disabled' rows='2' value={ this.state.bannerList }
-                            onChange={this.onBannerListChange} />
+                            onChange={ this.onBannerListChange } />
                     </div>
                     }
                     <Typeahead label='Card' labelClass={'col-sm-3'} fieldClass='col-sm-4' labelKey={'label'} options={this.props.cards}
@@ -342,6 +344,7 @@ InnerDeckEditor.propTypes = {
 function mapStateToProps(state) {
     return {
         apiError: state.api.message,
+        banners: state.cards.banners,
         cards: state.cards.cards,
         deck: state.cards.selectedDeck,
         decks: state.cards.decks,

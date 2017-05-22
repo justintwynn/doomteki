@@ -25,8 +25,9 @@ export default function(state = {}, action) {
             var agendas = _.filter(action.response.cards, card => {
                 return card.type_code === 'agenda' && card.pack_code !== 'VDS';
             });
+
             var banners = _.filter(agendas, card => {
-                return _.contains(card.label, 'Banner of the');
+                return card.label.startsWith('Banner of the');
             });
 
             return Object.assign({}, state, {
