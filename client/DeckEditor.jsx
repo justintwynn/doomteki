@@ -27,8 +27,8 @@ class InnerDeckEditor extends React.Component {
         this.state = {
             cardList: '',
             deck: this.copyDeck(props.deck),
-            bannerList: '',
             numberToAdd: 1,
+            showBanners: false,
             validation: {
                 deckname: '',
                 cardToAdd: ''
@@ -106,17 +106,13 @@ class InnerDeckEditor extends React.Component {
         this.props.updateDeck(deck);
     }
 
-    onAgendaChange(event) {
-        if(!event.target.value || event.target.value === '') {
-            this.setState({ selectedAgenda: { code: '' } }, () => this.raiseDeckChanged());
-            return;
-        }
+    onAgendaChange(selectedAgenda) {
+        let deck = this.copyDeck(this.state.deck);
 
-        var agenda = _.find(this.props.agendas, function(agenda) {
-            return agenda.code === event.target.value;
-        });
-        this.setState({ bannersVisible: agenda.name === 'Alliance'});
-        this.setState({ selectedAgenda: agenda }, () => this.raiseDeckChanged());
+        deck.agenda = selectedAgenda;
+
+        this.setState({ deck: deck, showBanners: deck.agenda.code === '06018' });
+        this.props.updateDeck(deck);
     }
 
     onBannerChange(event) {
@@ -301,7 +297,7 @@ class InnerDeckEditor extends React.Component {
                         onChange={ this.onAgendaChange } value={ this.state.deck.agenda ? this.state.deck.agenda.code : undefined }
                         valueKey='code' nameKey='label' blankOption={ { label: '- Select -', code: '' } } />
 
-                    {this.state.bannersVisible &&
+                    { this.state.showBanners &&
                     <div>
                         <Select name='banners' label ='Banners' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.banners }
                             onChange={this.onBannerChange} value={this.state.selectedBanner.name} blankOption={{ name: '- Select -', code: '' }} button={{ text:'Add', onClick: this.onAddBanner}} />
