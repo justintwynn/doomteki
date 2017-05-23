@@ -210,7 +210,7 @@ export function validateDeck(deck, packs) {
         isValid = false;
     }
 
-    if(_.any(bannerCards, (bannerCount, key) => {
+    if(_.any(bannerCards, bannerCount => {
         return bannerCount < 12;
     })) {
         extendedStatus.push('Not enough banner faction cards');
