@@ -86,29 +86,11 @@ export function validateDeck(deck, packs) {
     // Alliance
     if(deck.agenda && deck.agenda.code === '06018') {
         requiredDraw = 75;
-        _.each(deck.bannerCards, banner => {
-            let hasLoyalBannerCard = false;
-            let banneredCards = _.reduce(combined, (memo, card) => {
-                let faction = card.card.faction_code.toLowerCase();
-                if(isBannerCard(banner.code, faction) && !card.card.is_loyal) {
-                    return memo + card.count;
-                }
-                if(isBannerCard(banner.code, faction) && card.card.is_loyal) {
-                    hasLoyalBannerCard = true;
-                }
-                return memo;
-            }, 0);
-            if(banneredCards < 12) {
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Too few banner cards for ' + banner.label);
-            }
-            if(hasLoyalBannerCard) {
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Has a loyal banner card');
-            }
-        });
+        if(deck.bannerCards.length !== 0 && deck.bannerCards.length !== 2) {
+            status = 'Invalid';
+            isValid = false;
+            extendedStatus.push('Wrong number of banner cards');
+        }
     }
 
     // "The Rains of Castamere"
@@ -193,24 +175,31 @@ export function validateDeck(deck, packs) {
         extendedStatus.push('You cannot include more than 15 neutral cards in a deck with Fealty');
     }
 
-    // The Brotherhood Without Banners
-    if(deck.agenda && deck.agenda.code === '06119' &&
-    _.any(deck.drawCards, card => {
-        return card.card.is_loyal && card.card.type_code === 'character';
-    })) {
-        status = 'Invalid';
-        isValid = false;
-        extendedStatus.push('The Brotherhood Without Banners cannot include loyal characters');
-    }
-
     // Alliance
     let bannerCount = 0;
     if((!deck.agenda || deck.agenda && deck.agenda.code !== '06018') && !_.all(combined, card => {
         let faction = card.card.faction_code.toLowerCase();
         let bannerCard = false;
 
-        if(deck.agenda && isBannerCard(deck.agenda.code, faction) && !card.card.is_loyal) {
-            bannerCount += card.count;
+        if(deck.agenda && deck.agenda.code === '06018') {
+            if(_.any(deck.bannerCards, banner => {
+                return isBannerCard(banner.code, faction) && !card.card.is_loyal;
+            })) {
+                if(bannerCards[faction]) {
+                    bannerCards[faction] += card.count;
+                } else {
+                    bannerCards[faction] = card.count;
+                }
+
+                bannerCard = true;
+            }
+        } else if(deck.agenda && isBannerCard(deck.agenda.code, faction) && !card.card.is_loyal) {
+            if(bannerCards[faction]) {
+                bannerCards[faction]++;
+            } else {
+                bannerCards[faction] = 1;
+            }
+
             bannerCard = true;
         }
 
@@ -221,7 +210,9 @@ export function validateDeck(deck, packs) {
         isValid = false;
     }
 
-    if(bannerCount > 0 && bannerCount < 12) {
+    if(_.any(bannerCards, (bannerCount, key) => {
+        return bannerCount < 12;
+    })) {
         extendedStatus.push('Not enough banner faction cards');
         status = 'Invalid';
         isValid = false;
