@@ -86,7 +86,7 @@ export function validateDeck(deck, packs) {
     // Alliance
     if(deck.agenda && deck.agenda.code === '06018') {
         requiredDraw = 75;
-        if(deck.bannerCards.length !== 0 && deck.bannerCards.length !== 2) {
+        if(deck.bannerCards && (deck.bannerCards.length !== 0 && deck.bannerCards.length !== 2)) {
             status = 'Invalid';
             isValid = false;
             extendedStatus.push('Wrong number of banner cards');

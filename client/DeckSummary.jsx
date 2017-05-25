@@ -64,6 +64,10 @@ class DeckSummary extends React.Component {
     }
 
     render() {
+        if(!this.props.deck) {
+            return <div>Waiting for selected deck...</div>;
+        }
+
         var cardsToRender = this.getCardsToRender();
         var banners = this.getBannersToRender();
 

@@ -57,13 +57,12 @@ class InnerEditDeck extends React.Component {
         if(this.props.loading) {
             content = <div>Loading decks from the server...</div>;
         } else if(this.props.apiError) {
-            content = <AlertPanel type='error' message={this.props.apiError} />;
+            content = <AlertPanel type='error' message={ this.props.apiError } />;
         } else if(!this.props.deck) {
             content = <AlertPanel message='The specified deck was not found' type='error' />;
         } else {
             content = (<div>
-                        {<DeckEditor agendas={ this.props.agendas } banners={ this.props.banners } cards={ this.props.cards } packs={ this.props.packs }
-                            deck={ this.props.deck } mode='Save' onDeckChange={ this.onDeckChange } onDeckSave={ this.onEditDeck } />}
+                        {<DeckEditor mode='Save' onDeckSave={ this.onEditDeck } />}
                         <DeckSummary className='col-sm-6 right-pane' cards={ this.props.cards } deck={ this.props.deck } />
                     </div>);
         }
@@ -90,8 +89,8 @@ InnerEditDeck.propTypes = {
 
 function mapStateToProps(state) {
     return {
-        apiError: state.api.message,
         agendas: state.cards.agendas,
+        apiError: state.api.message,
         banners: state.cards.banners,
         cards: state.cards.cards,
         deck: state.cards.selectedDeck,

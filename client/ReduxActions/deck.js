@@ -5,7 +5,7 @@ export function loadDecks() {
     return {
         types: ['REQUEST_DECKS', 'RECEIVE_DECKS'],
         shouldCallAPI: (state) => {
-            return !state.cards.decks;
+            return state.cards.singleDeck || !state.cards.decks;
         },
         callAPI: () => $.ajax('/api/decks')
     };
@@ -15,9 +15,11 @@ export function loadDeck(deckId) {
     return {
         types: ['REQUEST_DECK', 'RECEIVE_DECK'],
         shouldCallAPI: (state) => {
-            return !_.any(state.cards.decks, deck => {
-                deck._id === deckId;
+            let ret = !_.any(state.cards.decks, deck => {
+                return deck._id === deckId;
             });
+
+            return ret;
         },
         callAPI: () => $.ajax('/api/decks/' + deckId)
     };

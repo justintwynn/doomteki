@@ -66,7 +66,8 @@ class InnerDeckEditor extends React.Component {
             drawCards: deck.drawCards,
             bannerCards: deck.bannerCards,
             faction: deck.faction,
-            agenda: deck.agenda
+            agenda: deck.agenda,
+            validation: deck.validation
         };
     }
 
@@ -106,6 +107,10 @@ class InnerDeckEditor extends React.Component {
 
         if(!this.state.selectedBanner) {
             return;
+        }
+
+        if(!this.state.deck.bannerCards) {
+            this.state.deck.bannerCards = {};
         }
 
         if(_.any(this.state.deck.bannerCards, banner => {
@@ -266,6 +271,8 @@ class InnerDeckEditor extends React.Component {
 
     onSaveClick(event) {
         event.preventDefault();
+
+        console.info(this.props.mode);
     }
 
     getBannerList() {
@@ -282,7 +289,7 @@ class InnerDeckEditor extends React.Component {
     }
 
     render() {
-        if(!this.props.deck) {
+        if(!this.props.deck || this.props.loading) {
             return <div>Waiting for deck...</div>;
         }
 
@@ -341,6 +348,7 @@ InnerDeckEditor.propTypes = {
     cards: React.PropTypes.array,
     deck: React.PropTypes.object,
     factions: React.PropTypes.array,
+    loading: React.PropTypes.bool,
     mode: React.PropTypes.string,
     packs: React.PropTypes.array,
     updateDeck: React.PropTypes.func
@@ -349,6 +357,7 @@ InnerDeckEditor.propTypes = {
 function mapStateToProps(state) {
     return {
         apiError: state.api.message,
+        agendas: state.cards.agendas,
         banners: state.cards.banners,
         cards: state.cards.cards,
         deck: state.cards.selectedDeck,

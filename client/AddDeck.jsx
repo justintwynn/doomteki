@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import DeckSummary from './DeckSummary.jsx';
 import DeckEditor from './DeckEditor.jsx';
+import AlertPanel from './SiteComponents/AlertPanel.jsx';
 
 import * as actions from './actions';
 
@@ -18,6 +19,10 @@ export class InnerAddDeck extends React.Component {
 
         this.onAddDeck = this.onAddDeck.bind(this);
         this.onDeckChange = this.onDeckChange.bind(this);
+    }
+
+    componentWillMount() {
+        this.props.selectDeck({ name: 'New Deck' });
     }
 
     onAddDeck(deck) {
@@ -57,34 +62,43 @@ export class InnerAddDeck extends React.Component {
     }
 
     render() {
-        var errorBar = this.state.error ? <div className='alert alert-danger' role='alert'>{this.state.error}</div> : null;
+        let content;
 
-        return (
-            <div >
-                {errorBar}
-                <DeckEditor agendas={ this.props.agendas } cards={ this.props.cards } packs={ this.props.packs } mode='Add' factions={ this.props.factions }
-                    onDeckChange={ this.onDeckChange } onDeckSave={ this.onAddDeck } />
-                <DeckSummary className='col-sm-6 right-pane' cards={ this.props.cards } name={ this.state.deckName } agenda={ this.state.agenda }
-                    faction={ this.state.faction } plotCards={ this.state.plotCards } drawCards={ this.state.drawCards } />
-            </div >);
+        if(this.props.loading) {
+            content = <div>Loading decks from the server...</div>;
+        } else if(this.props.apiError) {
+            content = <AlertPanel type='error' message={this.props.apiError} />;
+        } else {
+            content = (<div>
+                <DeckEditor mode='Add' onDeckSave={ this.onAddDeck } />
+                <DeckSummary className='col-sm-6 right-pane' cards={ this.props.cards } deck={ this.props.deck } />
+            </div>);
+        }
+
+        return content;
     }
 }
 
 InnerAddDeck.displayName = 'InnerAddDeck';
 InnerAddDeck.propTypes = {
     agendas: React.PropTypes.array,
+    apiError: React.PropTypes.string,
     cards: React.PropTypes.array,
+    deck: React.PropTypes.object,
     factions: React.PropTypes.array,
+    loading: React.PropTypes.bool,
     navigate: React.PropTypes.func,
-    packs: React.PropTypes.array
+    selectDeck: React.PropTypes.func
 };
 
 function mapStateToProps(state) {
     return {
         agendas: state.cards.agendas,
+        apiError: state.api.message,
         cards: state.cards.cards,
+        deck: state.cards.selectedDeck,
         factions: state.cards.factions,
-        packs: state.cards.packs,
+        loading: state.api.loading,
         socket: state.socket.socket
     };
 }

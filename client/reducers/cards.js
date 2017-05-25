@@ -53,18 +53,20 @@ export default function(state = {}, action) {
             });
         case 'RECEIVE_DECKS':
             newState = Object.assign({}, state, {
+                singleDeck: false,
                 decks: action.response.decks
             });
-
-            newState = selectDeck(newState, newState.decks[0]);
 
             if(newState.decks) {
                 validateDecks(newState.decks, newState.packs);
             }
 
+            newState = selectDeck(newState, newState.decks[0]);
+
             return newState;
         case 'RECEIVE_DECK':
             newState = Object.assign({}, state, {
+                singleDeck: true
             });
 
             newState.decks = _.map(state.decks, deck => {
@@ -81,11 +83,15 @@ export default function(state = {}, action) {
                 newState.decks.push(action.response.deck);
             }
 
-            newState = selectDeck(newState, action.response.deck);
-
             if(newState.decks) {
                 validateDecks(newState.decks, newState.packs);
             }
+
+            var selected = _.find(newState.decks, deck => {
+                return deck._id === action.response.deck._id;
+            });
+
+            newState = selectDeck(newState, selected);
 
             return newState;
         case 'SELECT_DECK':

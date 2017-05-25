@@ -35,10 +35,6 @@ export default function callAPIMiddleware({ dispatch, getState }) {
 
         return callAPI().then(
             response => {
-                dispatch(Object.assign({}, payload, {
-                    type: 'API_LOADED'
-                }));
-
                 if(!response.success) {
                     return dispatch(Object.assign({}, payload, {
                         status: 200,
@@ -47,10 +43,16 @@ export default function callAPIMiddleware({ dispatch, getState }) {
                     }));
                 }
 
-                return dispatch(Object.assign({}, payload, {
+                let ret = dispatch(Object.assign({}, payload, {
                     response,
                     type: successType
                 }));
+
+                dispatch(Object.assign({}, payload, {
+                    type: 'API_LOADED'
+                }));
+
+                return ret;
             },
             error => {
                 dispatch(Object.assign({}, payload, {
