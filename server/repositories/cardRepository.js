@@ -1,3 +1,5 @@
+const _ = require('underscore');
+
 const logger = require('../log.js');
 const BaseRepository = require('./baseRepository.js');
 

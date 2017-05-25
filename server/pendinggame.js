@@ -2,10 +2,10 @@ const uuid = require('uuid');
 const _ = require('underscore');
 const bcrypt = require('bcrypt');
 
-const config = require('../config.js');
+const config = require('./config.js');
 const logger = require('./log.js');
 const GameChat = require('./game/gamechat.js');
-const CardRepository = require('../repositories/cardRepository.js');
+const CardRepository = require('./repositories/cardRepository.js');
 
 class PendingGame {
     constructor(owner, details) {
