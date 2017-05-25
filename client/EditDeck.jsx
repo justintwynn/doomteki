@@ -1,5 +1,4 @@
 import React from 'react';
-import $ from 'jquery';
 import { connect } from 'react-redux';
 
 import DeckSummary from './DeckSummary.jsx';
@@ -26,29 +25,7 @@ class InnerEditDeck extends React.Component {
     }
 
     onEditDeck(deck) {
-        var str = JSON.stringify({
-            deckName: deck.name,
-            faction: deck.selectedFaction,
-            agenda: deck.selectedAgenda,
-            plotCards: deck.plotCards,
-            drawCards: deck.drawCards,
-            bannerCards: deck.bannerCards
-        });
-
-        $.ajax({
-            url: '/api/decks/' + this.props.deckId,
-            type: 'PUT',
-            data: { data: str }
-        }).done(data => {
-            if(!data.success) {
-                this.setState({ error: data.message });
-                return;
-            }
-
-            this.props.navigate('/decks');
-        }).fail(() => {
-            this.setState({ error: 'Could not communicate with the server.  Please try again later.' });
-        });
+        this.props.saveDeck(deck);
     }
 
     render() {
@@ -73,17 +50,18 @@ class InnerEditDeck extends React.Component {
 
 InnerEditDeck.displayName = 'InnerEditDeck';
 InnerEditDeck.propTypes = {
-    agendas: React.PropTypes.array,
+    agendas: React.PropTypes.object,
     apiError: React.PropTypes.string,
     banners: React.PropTypes.array,
-    cards: React.PropTypes.array,
+    cards: React.PropTypes.object,
     deck: React.PropTypes.object,
     deckId: React.PropTypes.string,
-    factions: React.PropTypes.array,
+    factions: React.PropTypes.object,
     loadDeck: React.PropTypes.func,
     loading: React.PropTypes.bool,
     navigate: React.PropTypes.func,
     packs: React.PropTypes.array,
+    saveDeck: React.PropTypes.func,
     setUrl: React.PropTypes.func
 };
 

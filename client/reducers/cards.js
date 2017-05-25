@@ -11,27 +11,46 @@ function selectDeck(state, deck) {
     return state;
 }
 
-function validateDecks(decks, packs) {
+function processDecks(decks, state) {
     _.each(decks, deck => {
-        deck.validation = validateDeck(deck, packs);
+        deck.faction = state.factions[deck.faction.value];
+        deck.agenda = state.agendas[deck.agenda.code];
+        deck.plotCards = _.map(deck.plotCards, card => {
+            return { count: card.count, card: state.cards[card.card.code] };
+        });
+
+        deck.drawCards = _.map(deck.drawCards, card => {
+            return { count: card.count, card: state.cards[card.card.code] };
+        });
+
+        deck.validation = validateDeck(deck, state.packs);
     });
 }
 
 export default function(state = {}, action) {
     let newState;
-
     switch(action.type) {
         case 'RECEIVE_CARDS':
-            var agendas = _.filter(action.response.cards, card => {
-                return card.type_code === 'agenda' && card.pack_code !== 'VDS';
+            var agendas = {};
+
+            _.each(action.response.cards, card => {
+                if(card.type_code === 'agenda' && card.pack_code !== 'VDS') {
+                    agendas[card.code] = card;
+                }
             });
 
             var banners = _.filter(agendas, card => {
                 return card.label.startsWith('Banner of the');
             });
 
+            var cards = {};
+
+            _.each(action.response.cards, card => {
+                cards[card.code] = card;
+            });
+
             return Object.assign({}, state, {
-                cards: action.response.cards,
+                cards: cards,
                 agendas: agendas,
                 banners: banners
             });
@@ -40,8 +59,14 @@ export default function(state = {}, action) {
                 packs: action.response.packs
             });
         case 'RECEIVE_FACTIONS':
+            var factions = {};
+
+            _.each(action.response.factions, faction => {
+                factions[faction.value] = faction;
+            });
+
             return Object.assign({}, state, {
-                factions: action.response.factions
+                factions: factions
             });
         case 'ZOOM_CARD':
             return Object.assign({}, state, {
@@ -52,14 +77,11 @@ export default function(state = {}, action) {
                 zoomCard: undefined
             });
         case 'RECEIVE_DECKS':
+            processDecks(action.response.decks, state);
             newState = Object.assign({}, state, {
                 singleDeck: false,
                 decks: action.response.decks
             });
-
-            if(newState.decks) {
-                validateDecks(newState.decks, newState.packs);
-            }
 
             newState = selectDeck(newState, newState.decks[0]);
 
@@ -69,9 +91,11 @@ export default function(state = {}, action) {
                 singleDeck: true
             });
 
+            processDecks([action.response.deck], state);
+
             newState.decks = _.map(state.decks, deck => {
                 if(action.response.deck._id === deck.id) {
-                    return action.response.deck;
+                    return deck;
                 }
 
                 return deck;
@@ -81,10 +105,6 @@ export default function(state = {}, action) {
                 return deck._id === action.response.deck._id;
             })) {
                 newState.decks.push(action.response.deck);
-            }
-
-            if(newState.decks) {
-                validateDecks(newState.decks, newState.packs);
             }
 
             var selected = _.find(newState.decks, deck => {
@@ -100,7 +120,7 @@ export default function(state = {}, action) {
             });
 
             if(newState.selectedDeck) {
-                validateDecks([newState.selectedDeck], newState.packs);
+                processDecks([newState.selectedDeck], state);
             }
 
             return newState;
@@ -110,7 +130,7 @@ export default function(state = {}, action) {
             });
 
             if(newState.selectedDeck) {
-                validateDecks([newState.selectedDeck], newState.packs);
+                processDecks([newState.selectedDeck], state);
             }
 
             return newState;

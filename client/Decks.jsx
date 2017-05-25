@@ -127,7 +127,7 @@ class InnerDecks extends React.Component {
 InnerDecks.displayName = 'Decks';
 InnerDecks.propTypes = {
     apiError: React.PropTypes.string,
-    cards: React.PropTypes.array,
+    cards: React.PropTypes.object,
     decks: React.PropTypes.array,
     loadDecks: React.PropTypes.func,
     loading: React.PropTypes.bool,

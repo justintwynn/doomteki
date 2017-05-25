@@ -293,8 +293,6 @@ class App extends React.Component {
 
 App.displayName = 'Application';
 App.propTypes = {
-    agendas: React.PropTypes.array,
-    cards: React.PropTypes.array,
     clearGameState: React.PropTypes.func,
     currentGame: React.PropTypes.object,
     dispatch: React.PropTypes.func,
@@ -309,7 +307,6 @@ App.propTypes = {
     loadPacks: React.PropTypes.func,
     loggedIn: React.PropTypes.bool,
     navigate: React.PropTypes.func,
-    packs: React.PropTypes.array,
     path: React.PropTypes.string,
     receiveBannerNotice: React.PropTypes.func,
     receiveGameState: React.PropTypes.func,
@@ -328,12 +325,8 @@ App.propTypes = {
 
 function mapStateToProps(state) {
     return {
-        agendas: state.cards.agendas,
-        cards: state.cards.cards,
         currentGame: state.games.currentGame,
-        factions: state.cards.factions,
         games: state.games.games,
-        packs: state.cards.packs,
         path: state.navigation.path,
         loggedIn: state.auth.loggedIn,
         token: state.auth.token,

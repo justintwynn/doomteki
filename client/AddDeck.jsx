@@ -83,7 +83,7 @@ InnerAddDeck.displayName = 'InnerAddDeck';
 InnerAddDeck.propTypes = {
     agendas: React.PropTypes.array,
     apiError: React.PropTypes.string,
-    cards: React.PropTypes.array,
+    cards: React.PropTypes.object,
     deck: React.PropTypes.object,
     factions: React.PropTypes.array,
     loading: React.PropTypes.bool,

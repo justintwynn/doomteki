@@ -43,17 +43,6 @@ class InnerDeckEditor extends React.Component {
         }
     }
 
-    buildDeck() {
-        return {
-            name: this.state.deckName,
-            selectedFaction: this.state.selectedFaction,
-            selectedAgenda: this.state.selectedAgenda,
-            plotCards: this.state.plotCards,
-            drawCards: this.state.drawCards,
-            bannerCards: this.state.bannerCards
-        };
-    }
-
     // XXX One could argue this is a bit hacky, because we're updating the innards of the deck object, react doesn't update components that use it unless we change the reference itself
     copyDeck(deck) {
         if(!deck) {
@@ -61,6 +50,7 @@ class InnerDeckEditor extends React.Component {
         }
 
         return {
+            _id: deck._id,
             name: deck.name,
             plotCards: deck.plotCards,
             drawCards: deck.drawCards,
@@ -272,7 +262,9 @@ class InnerDeckEditor extends React.Component {
     onSaveClick(event) {
         event.preventDefault();
 
-        console.info(this.props.mode);
+        if(this.props.onDeckSave) {
+            this.props.onDeckSave(this.props.deck);
+        }
     }
 
     getBannerList() {
@@ -302,9 +294,9 @@ class InnerDeckEditor extends React.Component {
                 <form className='form form-horizontal'>
                     <Input name='deckName' label='Deck Name' labelClass='col-sm-3' fieldClass='col-sm-9' placeholder='Deck Name'
                         type='text' onChange={this.onChange.bind(this, 'name')} value={ this.state.deck.name } />
-                    <Select name='faction' label='Faction' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.factions }
+                    <Select name='faction' label='Faction' labelClass='col-sm-3' fieldClass='col-sm-9' options={ _.toArray(this.props.factions) }
                         onChange={ this.onFactionChange.bind(this) } value={ this.state.deck.faction ? this.state.deck.faction.value : undefined } />
-                    <Select name='agenda' label='Agenda' labelClass='col-sm-3' fieldClass='col-sm-9' options={ this.props.agendas }
+                    <Select name='agenda' label='Agenda' labelClass='col-sm-3' fieldClass='col-sm-9' options={ _.toArray(this.props.agendas) }
                         onChange={ this.onAgendaChange.bind(this) } value={ this.state.deck.agenda ? this.state.deck.agenda.code : undefined }
                         valueKey='code' nameKey='label' blankOption={ { label: '- Select -', code: '' } } />
 
@@ -319,7 +311,7 @@ class InnerDeckEditor extends React.Component {
                         </div>
                     </div>
                     }
-                    <Typeahead label='Card' labelClass={'col-sm-3'} fieldClass='col-sm-4' labelKey={'label'} options={ this.props.cards }
+                    <Typeahead label='Card' labelClass={'col-sm-3'} fieldClass='col-sm-4' labelKey={'label'} options={ _.toArray(this.props.cards) }
                         onChange={ this.addCardChange.bind(this) }>
                         <Input name='numcards' type='text' label='Num' labelClass='col-sm-1' fieldClass='col-sm-2'
                             value={ this.state.numberToAdd.toString() } onChange={ this.onChange.bind(this, 'numberToAdd') }>
@@ -343,13 +335,14 @@ class InnerDeckEditor extends React.Component {
 
 InnerDeckEditor.displayName = 'DeckEditor';
 InnerDeckEditor.propTypes = {
-    agendas: React.PropTypes.array,
+    agendas: React.PropTypes.object,
     banners: React.PropTypes.array,
-    cards: React.PropTypes.array,
+    cards: React.PropTypes.object,
     deck: React.PropTypes.object,
-    factions: React.PropTypes.array,
+    factions: React.PropTypes.object,
     loading: React.PropTypes.bool,
     mode: React.PropTypes.string,
+    onDeckSave: React.PropTypes.func,
     packs: React.PropTypes.array,
     updateDeck: React.PropTypes.func
 };

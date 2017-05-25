@@ -38,3 +38,32 @@ export function updateDeck(deck) {
         deck: deck
     };
 }
+
+export function saveDeck(deck) {
+    let str = JSON.stringify({
+        deckName: deck.name,
+        faction: { value: deck.faction.value },
+        agenda: { code: deck.agenda.code },
+        plotCards: formatCards(deck.plotCards),
+        drawCards: formatCards(deck.drawCards),
+        bannerCards: _.map(deck.bannerCards, card => {
+            return { code: card.code };
+        })
+    });
+
+    return {
+        types: ['SAVE_DECK', 'DECK_SAVED'],
+        shouldCallAPI: () => true,
+        callAPI: () => $.ajax({
+            url: '/api/decks/' + deck._id,
+            type: 'PUT',
+            data: { data: str }
+        })
+    };
+}
+
+function formatCards(cards) {
+    return _.map(cards, card => {
+        return { card: { code: card.card.code }, count: card.count };
+    });
+}
