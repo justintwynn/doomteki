@@ -1,7 +1,7 @@
 const mongoskin = require('mongoskin');
 const db = mongoskin.db('mongodb://127.0.0.1:27017/throneteki');
 const ObjectId = mongoskin.ObjectId;
-const logger = require('./../log.js');
+const logger = require('../log.js');
 
 module.exports.init = function(server) {
     server.get('/api/decks/:id', function(req, res, next) {

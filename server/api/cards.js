@@ -1,27 +1,25 @@
-const mongoskin = require('mongoskin');
-const db = mongoskin.db('mongodb://127.0.0.1:27017/throneteki');
 const _ = require('underscore');
 
-const logger = require('./../log.js');
+const config = require('../config.js');
+const logger = require('../log.js');
+const CardRepository = require('../repositories/cardRepository.js');
+
+var cardRepository = new CardRepository(config.dbPath);
 
 module.exports.init = function(server) {
     server.get('/api/cards', function(req, res, next) {
-        db.collection('cards').find({}).toArray(function(err, data) {
+        cardRepository.getCards((err, cards) => {
             if(err) {
                 logger.info(err);
                 return next(err);
             }
-
-            let cards = _.map(data, card => {
-                return _.pick(card, 'code', 'name', 'label', 'type_code', 'type_name', 'is_loyal', 'faction_code', 'deck_limit', 'pack_code');
-            });
 
             res.send({ success: true, cards: cards });
         });
     });
 
     server.get('/api/packs', function(req, res, next) {
-        db.collection('packs').find({}).toArray(function(err, data) {
+        cardRepository.getPacks((err, data) => {
             if(err) {
                 logger.info(err);
                 return next(err);
