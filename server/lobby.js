@@ -448,7 +448,7 @@ class Lobby {
                 return;
             }
 
-            this.cardRepository.getCards(false, (err, cards) => {
+            this.cardRepository.getCards(false, (err/*, cards*/) => {
                 if(err) {
                     return;
                 }
