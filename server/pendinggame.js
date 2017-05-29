@@ -2,10 +2,8 @@ const uuid = require('uuid');
 const _ = require('underscore');
 const bcrypt = require('bcrypt');
 
-const config = require('./config.js');
 const logger = require('./log.js');
 const GameChat = require('./game/gamechat.js');
-const CardRepository = require('./repositories/cardRepository.js');
 
 class PendingGame {
     constructor(owner, details) {
@@ -18,11 +16,6 @@ class PendingGame {
         this.gameType = details.gameType;
         this.createdAt = new Date();
         this.gameChat = new GameChat();
-        this.cardRepository = new CardRepository(config.dbPath);
-
-        this.cardRepository.getCards((err, cards) => {
-            this.cards = cards;
-        });
     }
 
     // Getters

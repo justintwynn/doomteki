@@ -43,14 +43,8 @@ export default function(state = {}, action) {
                 return card.label.startsWith('Banner of the');
             });
 
-            var cards = {};
-
-            _.each(action.response.cards, card => {
-                cards[card.code] = card;
-            });
-
             return Object.assign({}, state, {
-                cards: cards,
+                cards: action.response.cards,
                 agendas: agendas,
                 banners: banners
             });

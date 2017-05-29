@@ -4,7 +4,7 @@ const logger = require('../log.js');
 const BaseRepository = require('./baseRepository.js');
 
 class DeckRepository extends BaseRepository {
-    getCards(callback) {
+    getCards(brief, callback) {
         this.db.collection('cards').find({}).toArray((err, data) => {
             if(err) {
                 logger.info(err);
@@ -12,8 +12,14 @@ class DeckRepository extends BaseRepository {
                 this.callCallbackIfPresent(callback, err);
             }
 
-            let cards = _.map(data, card => {
-                return _.pick(card, 'code', 'name', 'label', 'type_code', 'type_name', 'is_loyal', 'faction_code', 'deck_limit', 'pack_code');
+            let cards = {};
+
+            _.each(data, card => {
+                if(brief) {
+                    cards[card.code] = _.pick(card, 'code', 'name', 'label', 'type_code', 'type_name', 'is_loyal', 'faction_code', 'deck_limit', 'pack_code');
+                } else {
+                    cards[card.code] = card;
+                }
             });
 
             this.callCallbackIfPresent(callback, err, cards);

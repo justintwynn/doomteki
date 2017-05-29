@@ -265,7 +265,7 @@ class InnerPendingGame extends React.Component {
 
 InnerPendingGame.displayName = 'PendingGame';
 InnerPendingGame.propTypes = {
-    cards: React.PropTypes.array,
+    cards: React.PropTypes.object,
     connecting: React.PropTypes.bool,
     currentGame: React.PropTypes.object,
     gameSocketClose: React.PropTypes.func,

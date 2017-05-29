@@ -10,6 +10,7 @@ const PendingGame = require('./pendinggame.js');
 const GameRouter = require('./gamerouter.js');
 const MessageRepository = require('./repositories/messageRepository.js');
 const DeckRepository = require('./repositories/deckRepository.js');
+const CardRepository = require('./repositories/cardRepository.js');
 
 class Lobby {
     constructor(server, options = {}) {
@@ -19,6 +20,7 @@ class Lobby {
         this.config = options.config;
         this.messageRepository = options.messageRepository || new MessageRepository(this.config.dbPath);
         this.deckRepository = options.deckRepository || new DeckRepository(this.config.dbPath);
+        this.cardRepository = options.cardRepository || new CardRepository(this.config.dbPath);
         this.router = options.router || new GameRouter(this.config);
 
         this.router.on('onGameClosed', this.onGameClosed.bind(this));
@@ -446,9 +448,18 @@ class Lobby {
                 return;
             }
 
-            game.selectDeck(socket.user.username, deck);
+            this.cardRepository.getCards(false, (err, cards) => {
+                if(err) {
+                    return;
+                }
 
-            this.sendGameState(game);
+        //        console.info(deck);
+
+                game.selectDeck(socket.user.username, deck);
+
+                this.sendGameState(game);
+            });
+
         });
     }
 
