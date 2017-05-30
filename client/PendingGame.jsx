@@ -4,10 +4,12 @@ import { connect } from 'react-redux';
 import $ from 'jquery';
 import _ from 'underscore';
 
-import * as actions from './actions';
+import AlertPanel from './SiteComponents/AlertPanel.jsx';
 import DeckRow from './DeckRow.jsx';
 import Messages from './GameComponents/Messages.jsx';
 import Avatar from './Avatar.jsx';
+
+import * as actions from './actions';
 
 class InnerPendingGame extends React.Component {
     constructor() {
@@ -33,24 +35,11 @@ class InnerPendingGame extends React.Component {
     }
 
     componentDidMount() {
-        $.ajax({
-            url: '/api/decks',
-            type: 'GET',
-            cache: false
-        }).done((data) => {
-            if(!data.success) {
-                this.setState({ error: data.message });
-                return;
-            }
-
-            this.setState({ decks: data.decks, decksLoading: false });
-        }).fail(() => {
-            this.setState({ error: 'Could not communicate with the server.  Please try again later.', decksLoading: false });
-        });
+        this.props.loadDecks();
     }
 
     componentWillReceiveProps(props) {
-        var players = _.size(props.currentGame.players);
+        let players = _.size(props.currentGame.players);
 
         if(this.state.playerCount === 1 && players === 2 && props.currentGame.owner === this.props.username) {
             this.refs.notification.play();
@@ -84,14 +73,14 @@ class InnerPendingGame extends React.Component {
     selectDeck(index) {
         $(findDOMNode(this.refs.modal)).modal('hide');
 
-        this.props.socket.emit('selectdeck', this.props.currentGame.id, this.state.decks[index]);
+        this.props.socket.emit('selectdeck', this.props.currentGame.id, this.props.decks[index]);
     }
 
     getPlayerStatus(player, username) {
-        var playerIsMe = player && player.name === username;
+        let playerIsMe = player && player.name === username;
 
-        var deck = null;
-        var selectLink = null;
+        let deck = null;
+        let selectLink = null;
 
         if(player && player.deck && player.deck.selected) {
             if(playerIsMe) {
@@ -185,14 +174,16 @@ class InnerPendingGame extends React.Component {
             return <div>Loading game in progress, please wait...</div>;
         }
 
-        var index = 0;
-        var decks = null;
+        let index = 0;
+        let decks = null;
 
-        if(this.state.decksLoading) {
-            decks = <div>Loading decks please wait...</div>;
+        if(this.props.loading) {
+            decks = <div>Loading decks from the server...</div>;
+        } else if(this.props.apiError) {
+            decks = <AlertPanel type='error' message={ this.props.apiError } />;
         } else {
-            decks = _.size(this.state.decks) > 0 ? _.map(this.state.decks, deck => {
-                var row = <DeckRow key={deck.name + index.toString()} deck={deck} onClick={this.selectDeck.bind(this, index)} active={index === this.state.selectedDeck} />;
+            decks = _.size(this.props.decks) > 0 ? _.map(this.props.decks, deck => {
+                let row = <DeckRow key={ deck.name + index.toString()} deck={ deck } onClick={ this.selectDeck.bind(this, index) } active={ index === this.state.selectedDeck } />;
 
                 index++;
 
@@ -200,7 +191,7 @@ class InnerPendingGame extends React.Component {
             }) : <div>You have no decks, please add one</div>;
         }
 
-        var popup = (
+        let popup = (
             <div id='decks-modal' ref='modal' className='modal fade' tabIndex='-1' role='dialog'>
                 <div className='modal-dialog' role='document'>
                     <div className='modal-content deck-popup'>
@@ -210,7 +201,7 @@ class InnerPendingGame extends React.Component {
                         </div>
                         <div className='modal-body'>
                             <div className='deck-list'>
-                                {decks}
+                                { decks }
                             </div>
                         </div>
                     </div>
@@ -265,11 +256,14 @@ class InnerPendingGame extends React.Component {
 
 InnerPendingGame.displayName = 'PendingGame';
 InnerPendingGame.propTypes = {
-    cards: React.PropTypes.object,
+    apiError: React.PropTypes.string,
     connecting: React.PropTypes.bool,
     currentGame: React.PropTypes.object,
+    decks: React.PropTypes.array,
     gameSocketClose: React.PropTypes.func,
     host: React.PropTypes.string,
+    loadDecks: React.PropTypes.func,
+    loading: React.PropTypes.bool,
     sendSocketMessage: React.PropTypes.func,
     socket: React.PropTypes.object,
     username: React.PropTypes.string,
@@ -278,10 +272,13 @@ InnerPendingGame.propTypes = {
 
 function mapStateToProps(state) {
     return {
-        cards: state.cards.cards,
+        apiError: state.api.message,
         connecting: state.socket.gameConnecting,
         currentGame: state.games.currentGame,
+        decks: state.cards.decks,
+
         host: state.socket.gameHost,
+        loading: state.api.loading,
         socket: state.socket.socket,
         username: state.auth.username
     };

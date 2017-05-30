@@ -448,12 +448,22 @@ class Lobby {
                 return;
             }
 
-            this.cardRepository.getCards(false, (err/*, cards*/) => {
+            this.cardRepository.getCards(false, (err, cards) => {
                 if(err) {
                     return;
                 }
 
-        //        console.info(deck);
+                _.each(deck.plotCards, plot => {
+                    plot.card = cards[plot.card.code];
+                });
+
+                _.each(deck.drawCards, draw => {
+                    draw.card = cards[draw.card.code];
+                });
+
+                if(deck.agenda) {
+                    deck.agenda = cards[deck.agenda.code];
+                }
 
                 game.selectDeck(socket.user.username, deck);
 
