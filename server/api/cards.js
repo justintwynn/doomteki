@@ -1,5 +1,3 @@
-const _ = require('underscore');
-
 const config = require('../config.js');
 const logger = require('../log.js');
 const CardRepository = require('../repositories/cardRepository.js');
