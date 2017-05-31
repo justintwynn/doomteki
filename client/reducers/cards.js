@@ -14,7 +14,10 @@ function selectDeck(state, deck) {
 function processDecks(decks, state) {
     _.each(decks, deck => {
         deck.faction = state.factions[deck.faction.value];
-        deck.agenda = state.agendas[deck.agenda.code];
+        if(deck.agenda) {
+            deck.agenda = state.agendas[deck.agenda.code];
+        }
+
         deck.plotCards = _.map(deck.plotCards, card => {
             return { count: card.count, card: state.cards[card.card.code] };
         });
