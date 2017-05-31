@@ -1,4 +1,4 @@
-import _ from 'underscore';
+const _ = require('underscore');
 
 function getDeckCount(deck) {
     let count = 0;
@@ -63,7 +63,7 @@ function isCardInReleasedPack(packs, card) {
     return releaseDate <= new Date();
 }
 
-export function validateDeck(deck, packs) {
+module.exports = function validateDeck(deck, packs) {
     let plotCount = getDeckCount(deck.plotCards);
     let drawCount = getDeckCount(deck.drawCards);
     let status = 'Valid';
@@ -228,4 +228,4 @@ export function validateDeck(deck, packs) {
     }
 
     return { status: status, plotCount: plotCount, drawCount: drawCount, extendedStatus: extendedStatus, isValid: isValid };
-}
+};

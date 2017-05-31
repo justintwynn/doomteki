@@ -183,7 +183,7 @@ class InnerPendingGame extends React.Component {
             decks = <AlertPanel type='error' message={ this.props.apiError } />;
         } else {
             decks = _.size(this.props.decks) > 0 ? _.map(this.props.decks, deck => {
-                let row = <DeckRow key={ deck.name + index.toString()} deck={ deck } onClick={ this.selectDeck.bind(this, index) } active={ index === this.state.selectedDeck } />;
+                let row = <DeckRow key={ deck.name + index.toString() } deck={ deck } onClick={ this.selectDeck.bind(this, index) } active={ index === this.state.selectedDeck } />;
 
                 index++;
 
