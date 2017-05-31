@@ -62,6 +62,10 @@ class PendingGame {
     }
 
     setupAgenda(player, agenda) {
+        if(!agenda) {
+            return;
+        }
+
         player.agenda = {};
         player.agenda.cardData = agenda;
     }
