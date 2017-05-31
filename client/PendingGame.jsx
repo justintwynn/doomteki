@@ -81,21 +81,33 @@ class InnerPendingGame extends React.Component {
 
         let deck = null;
         let selectLink = null;
+        let status = null;
 
         if(player && player.deck && player.deck.selected) {
             if(playerIsMe) {
-                deck = <span className='deck-selection'>{player.deck.name}</span>;
+                deck = <span className='deck-selection'>{ player.deck.name }</span>;
                 selectLink = <span className='deck-link' data-toggle='modal' data-target='#decks-modal'>Select deck...</span>;
             } else {
                 deck = <span className='deck-selection'>Deck Selected</span>;
             }
+
+            let statusClass = 'deck-status';
+            if(player.deck.status === 'Valid') {
+                statusClass += ' valid';
+            } else if(player.deck.status === 'Invalid') {
+                statusClass += ' invalid';
+            } else if(player.deck.status === 'Unreleased Cards') {
+                statusClass += ' unreleased';
+            }
+
+            status = <span className={ statusClass }>{ player.deck.status }</span>;
         } else if(player && playerIsMe) {
             selectLink = <span className='deck-link' data-toggle='modal' data-target='#decks-modal'>Select deck...</span>;
         }
 
         return (
-            <div className='player-row' key={player.name}>
-                <Avatar emailHash={ player.emailHash } forceDefault={ player.settings ? player.settings.disableGravatar : false } /><span>{ player.name }</span>{ deck } { selectLink }
+            <div className='player-row' key={ player.name }>
+                <Avatar emailHash={ player.emailHash } forceDefault={ player.settings ? player.settings.disableGravatar : false } /><span>{ player.name }</span>{ deck } { status } { selectLink }
             </div>);
     }
 

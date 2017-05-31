@@ -264,9 +264,9 @@ class PendingGame {
             var deck = undefined;
 
             if(activePlayer === player.name && player.deck) {
-                deck = { name: player.deck.name, selected: player.deck.selected, validation: player.deck.validation };
+                deck = { name: player.deck.name, selected: player.deck.selected, status: player.deck.status };
             } else if(player.deck) {
-                deck = { selected: player.deck.selected, validation: player.deck.validation };
+                deck = { selected: player.deck.selected, status: player.deck.status };
             } else {
                 deck = {};
             }

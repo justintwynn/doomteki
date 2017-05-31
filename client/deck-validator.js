@@ -1,4 +1,5 @@
 const _ = require('underscore');
+const moment = require('moment');
 
 function getDeckCount(deck) {
     let count = 0;
@@ -60,7 +61,10 @@ function isCardInReleasedPack(packs, card) {
         return false;
     }
 
-    return releaseDate <= new Date();
+    releaseDate = moment(releaseDate, 'YYYY-MM-DD');
+    let now = moment();
+
+    return releaseDate <= now;
 }
 
 module.exports = function validateDeck(deck, packs) {
@@ -219,7 +223,7 @@ module.exports = function validateDeck(deck, packs) {
     }
 
     if(isValid) {
-        if(_.any(combined, card => {
+        if(!_.all(combined, card => {
             return isCardInReleasedPack(packs, card);
         })) {
             status = 'Unreleased Cards';

@@ -11,7 +11,7 @@ const GameRouter = require('./gamerouter.js');
 const MessageRepository = require('./repositories/messageRepository.js');
 const DeckRepository = require('./repositories/deckRepository.js');
 const CardRepository = require('./repositories/cardRepository.js');
-const validateDeck = require('../client/deck-validator.js').validateDeck; // XXX Move this to a common location
+const validateDeck = require('../client/deck-validator.js'); // XXX Move this to a common location
 
 class Lobby {
     constructor(server, options = {}) {
@@ -471,7 +471,8 @@ class Lobby {
                         deck.agenda = cards[deck.agenda.code];
                     }
 
-                    deck.validation = validateDeck(deck, packs);
+                    let validation = validateDeck(deck, packs);
+                    deck.status = validation.status;
 
                     game.selectDeck(socket.user.username, deck);
 
