@@ -28,6 +28,15 @@ class InnerDeckEditor extends React.Component {
     }
 
     componentWillMount() {
+        if(!this.props.deck.faction && this.props.factions) {
+            let deck = this.copyDeck(this.state.deck);
+
+            deck.faction = this.props.factions['baratheon'];
+
+            this.setState({ deck: deck });
+            this.props.updateDeck(deck);
+        }
+
         let cardList = '';
 
         if(this.props.deck && (this.props.deck.drawCards || this.props.deck.plotCards)) {

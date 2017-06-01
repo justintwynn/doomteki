@@ -67,7 +67,7 @@ export class InnerAddDeck extends React.Component {
         if(this.props.loading) {
             content = <div>Loading decks from the server...</div>;
         } else if(this.props.apiError) {
-            content = <AlertPanel type='error' message={this.props.apiError} />;
+            content = <AlertPanel type='error' message={ this.props.apiError } />;
         } else {
             content = (<div>
                 <DeckEditor mode='Add' onDeckSave={ this.onAddDeck } />
@@ -81,11 +81,11 @@ export class InnerAddDeck extends React.Component {
 
 InnerAddDeck.displayName = 'InnerAddDeck';
 InnerAddDeck.propTypes = {
-    agendas: React.PropTypes.array,
+    agendas: React.PropTypes.object,
     apiError: React.PropTypes.string,
     cards: React.PropTypes.object,
     deck: React.PropTypes.object,
-    factions: React.PropTypes.array,
+    factions: React.PropTypes.object,
     loading: React.PropTypes.bool,
     navigate: React.PropTypes.func,
     selectDeck: React.PropTypes.func

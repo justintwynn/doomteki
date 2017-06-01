@@ -13,6 +13,11 @@ function selectDeck(state, deck) {
 
 function processDecks(decks, state) {
     _.each(decks, deck => {
+        if(!state.cards) {
+            deck.validation = {};
+            return;
+        }
+
         deck.faction = state.factions[deck.faction.value];
         if(deck.agenda) {
             deck.agenda = state.agendas[deck.agenda.code];
