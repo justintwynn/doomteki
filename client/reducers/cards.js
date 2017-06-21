@@ -136,6 +136,19 @@ export default function(state = {}, action) {
             }
 
             return newState;
+        case 'SAVE_DECK':
+            newState = Object.assign({}, state, {
+                deckSaved: false
+            });
+
+            return newState;
+        case 'DECK_SAVED':
+            newState = Object.assign({}, state, {
+                deckSaved: true,
+                decks: undefined
+            });
+
+            return newState;
         default:
             return state;
     }

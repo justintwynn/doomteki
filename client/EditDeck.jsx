@@ -24,6 +24,14 @@ class InnerEditDeck extends React.Component {
         }
     }
 
+    componentWillUpdate() {
+        if(this.props.deckSaved) {
+            this.props.navigate('/decks');
+
+            return;
+        }
+    }
+
     onEditDeck(deck) {
         this.props.saveDeck(deck);
     }
@@ -56,6 +64,7 @@ InnerEditDeck.propTypes = {
     cards: React.PropTypes.object,
     deck: React.PropTypes.object,
     deckId: React.PropTypes.string,
+    deckSaved: React.PropTypes.bool,
     factions: React.PropTypes.object,
     loadDeck: React.PropTypes.func,
     loading: React.PropTypes.bool,
@@ -72,6 +81,7 @@ function mapStateToProps(state) {
         banners: state.cards.banners,
         cards: state.cards.cards,
         deck: state.cards.selectedDeck,
+        deckSaved: state.cards.deckSaved,
         factions: state.cards.factions,
         loading: state.api.loading,
         socket: state.socket.socket
