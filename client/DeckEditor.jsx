@@ -55,7 +55,7 @@ class InnerDeckEditor extends React.Component {
     // XXX One could argue this is a bit hacky, because we're updating the innards of the deck object, react doesn't update components that use it unless we change the reference itself
     copyDeck(deck) {
         if(!deck) {
-            return { name: 'New Deck '};
+            return { name: 'New Deck'};
         }
 
         return {

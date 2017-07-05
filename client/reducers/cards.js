@@ -13,7 +13,7 @@ function selectDeck(state, deck) {
 
 function processDecks(decks, state) {
     _.each(decks, deck => {
-        if(!state.cards) {
+        if(!state.cards || !deck.faction) {
             deck.validation = {};
             return;
         }
@@ -88,9 +88,14 @@ export default function(state = {}, action) {
             newState = selectDeck(newState, newState.decks[0]);
 
             return newState;
+        case 'REQUEST_DECK':
+            return Object.assign({}, state, {
+                deckSaved: false
+            });
         case 'RECEIVE_DECK':
             newState = Object.assign({}, state, {
-                singleDeck: true
+                singleDeck: true,
+                deckSaved: false
             });
 
             processDecks([action.response.deck], state);
@@ -118,7 +123,8 @@ export default function(state = {}, action) {
             return newState;
         case 'SELECT_DECK':
             newState = Object.assign({}, state, {
-                selectedDeck: action.deck
+                selectedDeck: action.deck,
+                deckSaved: false
             });
 
             if(newState.selectedDeck) {
@@ -126,9 +132,21 @@ export default function(state = {}, action) {
             }
 
             return newState;
+        case 'ADD_DECK':
+            var newDeck = { name: 'New Deck' };
+            
+            newState = Object.assign({}, state, {
+                selectedDeck: newDeck,
+                deckSaved: false
+            });
+
+            processDecks([newState.selectedDeck], state);
+
+            return newState;
         case 'UPDATE_DECK':
             newState = Object.assign({}, state, {
-                selectedDeck: action.deck
+                selectedDeck: action.deck,
+                deckSaved: false
             });
 
             if(newState.selectedDeck) {

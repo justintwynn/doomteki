@@ -32,6 +32,12 @@ export function selectDeck(deck) {
     };
 }
 
+export function addDeck() {
+    return {
+        type: 'ADD_DECK'
+    };
+}
+
 export function updateDeck(deck) {
     return {
         type: 'UPDATE_DECK',
@@ -55,8 +61,8 @@ export function saveDeck(deck) {
         types: ['SAVE_DECK', 'DECK_SAVED'],
         shouldCallAPI: () => true,
         callAPI: () => $.ajax({
-            url: '/api/decks/' + deck._id,
-            type: 'PUT',
+            url: '/api/decks/' + (deck._id || ''),
+            type: deck._id ? 'PUT' : 'POST',
             data: { data: str }
         })
     };

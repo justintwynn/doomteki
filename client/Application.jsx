@@ -54,7 +54,7 @@ class App extends React.Component {
             '/register': () => <Register />,
             '/decks': () => <Decks { ...boundActionCreators } />,
             '/decks/add': () => <AddDeck />,
-            '/decks/edit': params => <ditDeck deckId={ params.deckId }/>,
+            '/decks/edit': params => <EditDeck deckId={ params.deckId }/>,
             '/play': () => (this.props.currentGame && this.props.currentGame.started) ? <GameBoard /> : <GameLobby />,
             '/about': () => <About />,
             '/forgot': () => <ForgotPassword />,

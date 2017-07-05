@@ -19,15 +19,15 @@ export default function callAPIMiddleware({ dispatch, getState }) {
             throw new Error('Expected callAPI to be a function.');
         }
 
-        if(!shouldCallAPI(getState())) {
-            return;
-        }
-
         const [requestType, successType] = types;
 
         dispatch(Object.assign({}, payload, {
             type: requestType
         }));
+
+        if(!shouldCallAPI(getState())) {
+            return;
+        }
 
         dispatch(Object.assign({}, payload, {
             type: 'API_LOADING'

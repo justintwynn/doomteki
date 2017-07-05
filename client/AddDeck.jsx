@@ -1,5 +1,4 @@
 import React from 'react';
-import $ from 'jquery';
 import { connect } from 'react-redux';
 
 import DeckSummary from './DeckSummary.jsx';
@@ -18,47 +17,14 @@ export class InnerAddDeck extends React.Component {
         };
 
         this.onAddDeck = this.onAddDeck.bind(this);
-        this.onDeckChange = this.onDeckChange.bind(this);
     }
 
     componentWillMount() {
-        this.props.selectDeck({ name: 'New Deck' });
+        this.props.addDeck();
     }
 
     onAddDeck(deck) {
-        var str = JSON.stringify({
-            deckName: deck.name,
-            faction: deck.selectedFaction,
-            agenda: deck.selectedAgenda,
-            plotCards: deck.plotCards,
-            drawCards: deck.drawCards
-        });
-
-        $.ajax({
-            url: '/api/decks/',
-            type: 'POST',
-            data: { data: str },
-            cache: false
-        }).done((data) => {
-            if(!data.success) {
-                this.setState({ error: data.message });
-                return;
-            }
-
-            this.props.navigate('/decks');
-        }).fail(() => {
-            this.setState({ error: 'Could not communicate with the server.  Please try again later.' });
-        });
-    }
-
-    onDeckChange(deck) {
-        this.setState({
-            deckName: deck.name,
-            faction: deck.selectedFaction,
-            agenda: deck.selectedAgenda,
-            plotCards: deck.plotCards,
-            drawCards: deck.drawCards
-        });
+        this.props.saveDeck(deck);
     }
 
     render() {
@@ -81,6 +47,7 @@ export class InnerAddDeck extends React.Component {
 
 InnerAddDeck.displayName = 'InnerAddDeck';
 InnerAddDeck.propTypes = {
+    addDeck: React.PropTypes.func,
     agendas: React.PropTypes.object,
     apiError: React.PropTypes.string,
     cards: React.PropTypes.object,
@@ -88,7 +55,7 @@ InnerAddDeck.propTypes = {
     factions: React.PropTypes.object,
     loading: React.PropTypes.bool,
     navigate: React.PropTypes.func,
-    selectDeck: React.PropTypes.func
+    saveDeck: React.PropTypes.func
 };
 
 function mapStateToProps(state) {
