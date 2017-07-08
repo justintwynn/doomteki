@@ -1,7 +1,7 @@
 /*eslint no-console:0 */
 const request = require('request');
 const mongoskin = require('mongoskin');
-const db = mongoskin.db('mongodb://127.0.0.1:27017/throneteki');
+const db = mongoskin.db('mongodb://127.0.0.1:27017/doomteki');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
 const path = require('path');
@@ -64,4 +64,3 @@ request.get(apiUrl + 'packs', function(error, res, body) {
         });
     });
 });
-
