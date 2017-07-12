@@ -45,7 +45,7 @@ describe('The Rains of Castamere', function() {
         });
 
         it('should create the schemes plot pile', function() {
-            expect(this.player.createAdditionalPile).toHaveBeenCalledWith('scheme plots', { title: jasmine.any(String), area: 'plots', isPrivate: true });
+            expect(this.player.createAdditionalPile).toHaveBeenCalledWith('scheme plots', { isPrivate: true });
         });
 
         it('should remove the schemes from the players plot deck', function() {
@@ -280,7 +280,7 @@ describe('The Rains of Castamere', function() {
         beforeEach(function() {
             const deck = this.buildDeck('lannister', [
                 '"The Rains of Castamere"',
-                'Trading with the Pentoshi', 'Wardens of the West',
+                'Trading with the Pentoshi', 'Wardens of the West', 'The Red Wedding',
                 'Cersei Lannister (LoCR)'
             ]);
             this.player1.selectDeck(deck);
@@ -320,6 +320,12 @@ describe('The Rains of Castamere', function() {
             this.player1.clickPrompt('Wardens of the West');
 
             expect(this.player1).toHavePromptButton('Wardens of the West');
+        });
+
+        it('should not allow interrupts in the current window to trigger since the current window is for reactions only', function() {
+            this.player1.clickPrompt('The Red Wedding');
+
+            expect(this.player1).not.toHavePromptButton('The Red Wedding');
         });
     });
 });
