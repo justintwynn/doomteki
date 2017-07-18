@@ -70,7 +70,7 @@ class SelectCardPrompt extends UiPrompt {
             numCards: 1,
             additionalButtons: [],
             cardCondition: () => true,
-            cardType: ['attachment', 'character', 'event', 'location'],
+            cardType: ['dude', 'deed', 'goods', 'outfit', 'spell'],
             gameAction: 'target',
             onSelect: () => true,
             onMenuCommand: () => true,
