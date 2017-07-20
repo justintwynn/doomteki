@@ -3,6 +3,7 @@ import _ from 'underscore';
 import $ from 'jquery';
 import {connect} from 'react-redux';
 
+import AlertPanel from './SiteComponents/AlertPanel.jsx';
 import Input from './FormComponents/Input.jsx';
 import Checkbox from './FormComponents/Checkbox.jsx';
 
@@ -16,31 +17,20 @@ class InnerProfile extends React.Component {
             return;
         }
 
-        this.windowDefaults = {
-            plot: false,
-            draw: false,
-            challengeBegin: false,
-            attackersDeclared: true,
-            defendersDeclared: true,
-            winnerDetermined: false,
-            dominance: false,
-            standing: false
-        };
-
         this.state = {
             disableGravatar: this.props.user.settings ? this.props.user.settings.disableGravatar : false,
             email: this.props.user ? this.props.user.email : '',
             loading: false,
             newPassword: '',
             newPasswordAgain: '',
-            promptedActionWindows: this.props.user.promptedActionWindows || this.windowDefaults,
+            promptedActionWindows: this.props.user ? this.props.user.promptedActionWindows : {},
             validation: {}
         };
 
         this.windows = [
             { name: 'plot', label: 'Plots revealed' },
             { name: 'draw', label: 'Draw phase' },
-            { name: 'challengeBegin', label: 'Challenge phase begins' },
+            { name: 'challengeBegin', label: 'Before challenge' },
             { name: 'attackersDeclared', label: 'Attackers declared' },
             { name: 'defendersDeclared', label: 'Defenders declared' },
             { name: 'winnerDetermined', label: 'Winner determined' },
@@ -53,8 +43,8 @@ class InnerProfile extends React.Component {
         if(!props.user) {
             return;
         }
-        
-        this.setState({ email: props.user.email, disableGravatar: props.user.settings ? props.user.settings.disableGravatar : false, promptedActionWindows: props.user.promptedActionWindows || this.windowDefaults });
+
+        this.setState({ email: props.user.email, disableGravatar: props.user.settings ? props.user.settings.disableGravatar : false, promptedActionWindows: props.user ? props.user.promptedActionWindows : {} });
     }
 
     onChange(field, event) {
@@ -79,7 +69,7 @@ class InnerProfile extends React.Component {
 
         this.verifyEmail();
         this.verifyPassword(true);
-        
+
         if(_.any(this.state.validation, function(message) {
             return message && message !== '';
         })) {
@@ -89,8 +79,8 @@ class InnerProfile extends React.Component {
 
         this.setState({ loading: true });
 
-        $.ajax('/api/account/' + this.props.user.username, 
-            { 
+        $.ajax('/api/account/' + this.props.user.username,
+            {
                 method: 'PUT',
                 data: { data: JSON.stringify({
                     email: this.state.email,
@@ -154,29 +144,29 @@ class InnerProfile extends React.Component {
 
     render() {
         if(!this.props.user) {
-            return <div className='alert alert-danger'>You must be logged in to update your profile</div>;
+            return <AlertPanel type='error' message='You must be logged in to update your profile' />;
         }
 
         let windows = _.map(this.windows, window => {
             return (<Checkbox key={ window.name } name={ 'promptedActionWindows.' + window.name } label={ window.label } fieldClass='col-sm-offset-3 col-sm-4'
-                type='checkbox' onChange={ (this.onWindowToggle.bind(this, window.name)) } checked={ this.state.promptedActionWindows[window.name] } />);             
+                type='checkbox' onChange={ (this.onWindowToggle.bind(this, window.name)) } checked={ this.state.promptedActionWindows[window.name] } />);
         });
 
         return (
             <div>
                 <h2>User profile for { this.props.user.username }</h2>
-                { this.state.errorMessage ? <div className='alert alert-danger'>{ this.state.errorMessage }</div> : null }
-                { this.state.successMessage ? <div className='alert alert-success'>{ this.state.successMessage }</div> : null }
+                { this.state.errorMessage ? <AlertPanel type='error' message={ this.state.errorMessage } /> : null }
+                { this.state.successMessage ? <AlertPanel type='success' message={ this.state.successMessage } /> : null }
                 <form className='form form-horizontal'>
                     <h3>User details</h3>
                     <Input name='email' label='Email Address' labelClass='col-sm-3' fieldClass='col-sm-4' placeholder='Enter email address'
                         type='text' onChange={ this.onChange.bind(this, 'email') } value={ this.state.email }
                         onBlur={ this.verifyEmail.bind(this) } validationMessage={ this.state.validation['email'] } />
                     <Input name='newPassword' label='New Password' labelClass='col-sm-3' fieldClass='col-sm-4' placeholder='Enter new password'
-                        type='password' onChange={ this.onChange.bind(this, 'newPassword') } value={ this.state.newPassword } 
+                        type='password' onChange={ this.onChange.bind(this, 'newPassword') } value={ this.state.newPassword }
                         onBlur={ this.verifyPassword.bind(this, false) } validationMessage={ this.state.validation['password'] } />
                     <Input name='newPasswordAgain' label='New Password (again)' labelClass='col-sm-3' fieldClass='col-sm-4' placeholder='Enter new password (again)'
-                        type='password' onChange={ this.onChange.bind(this, 'newPasswordAgain') } value={ this.state.newPasswordAgain } 
+                        type='password' onChange={ this.onChange.bind(this, 'newPasswordAgain') } value={ this.state.newPasswordAgain }
                         onBlur={ this.verifyPassword.bind(this, false) } validationMessage={ this.state.validation['password1'] } />
                     <Checkbox name='disableGravatar' label='Disable Gravatar integration' fieldClass='col-sm-offset-3 col-sm-4'
                         onChange={ e => this.setState({ disableGravatar: e.target.checked }) } checked={ this.state.disableGravatar } />

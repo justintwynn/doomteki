@@ -1,7 +1,8 @@
-import _ from 'underscore';
+const _ = require('underscore');
+const moment = require('moment');
 
 function getDeckCount(deck) {
-    var count = 0;
+    let count = 0;
 
     _.each(deck, function(card) {
         count += card.count;
@@ -11,189 +12,232 @@ function getDeckCount(deck) {
 }
 
 function hasTrait(card, trait) {
-    return card.card.traits && card.card.traits.toLowerCase().indexOf(trait.toLowerCase() + '.') !== -1;
+    return card.traits && card.traits.toLowerCase().indexOf(trait.toLowerCase() + '.') !== -1;
 }
 
-function isBannerCard(bannerCode, faction) {
-    switch(bannerCode) {
-        // Banner of the stag
-        case '01198':
-            return faction === 'baratheon';
-        // Banner of the kraken
-        case '01199':
-            return faction === 'greyjoy';
-        // Banner of the lion
-        case '01200':
-            return faction === 'lannister';
-        // Banner of the sun
-        case '01201':
-            return faction === 'martell';
-        // Banner of the watch
-        case '01202':
-            return faction === 'thenightswatch';
-        // Banner of the wolf
-        case '01203':
-            return faction === 'stark';
-        // Banner of the dragon
-        case '01204':
-            return faction === 'targaryen';
-        // Banner of the rose
-        case '01205':
-            return faction === 'tyrell';
-    }
+function isCardInReleasedPack(packs, card) {
+    let pack = _.find(packs, pack => {
+        return card.pack_code === pack.code;
+    });
 
-    return false;
-}
-
-export function validateDeck(deck) {
-    var plotCount = getDeckCount(deck.plotCards);
-    var drawCount = getDeckCount(deck.drawCards);
-    var status = 'Valid';
-    var requiredPlots = 7;
-    var isRains = false;
-    var extendedStatus = [];
-    var requiredDraw = 60;
-    if(_.any(deck.drawCards, card => {
-        return !card.card.faction_code;
-    })) {
-        status = 'Invalid';
-        extendedStatus.push('Deck contains invalid cards');
-        
-        return { status: status, plotCount: plotCount, drawCount: drawCount, extendedStatus: extendedStatus };
-    }
-    var combined = _.union(deck.plotCards, deck.drawCards);
-
-    // Alliance 
-    if(deck.agenda && deck.agenda.code === '06018') {
-        requiredDraw = 75;
-        _.each(deck.bannerCards, banner => {
-            var hasLoyalBannerCard = false;
-            var banneredCards = _.reduce(combined, (memo, card) => {
-                var faction = card.card.faction_code.toLowerCase();
-                if(isBannerCard(banner.code, faction) && !card.card.is_loyal) {
-                    return memo + card.count;          
-                }
-                if(isBannerCard(banner.code, faction) && card.card.is_loyal) {
-                    hasLoyalBannerCard = true;
-                }
-                return memo;
-            }, 0);
-            if(banneredCards < 12) {
-                status = 'Invalid';
-                extendedStatus.push('Too few banner cards for ' + banner.label);
-            }
-            if(hasLoyalBannerCard) {
-                status = 'Invalid';
-                extendedStatus.push('Has a loyal banner card');
-            }
-        });   
-    }
-    
-    // "The Rains of Castamere"
-    if(deck.agenda && deck.agenda.code === '05045') {
-        isRains = true;
-        requiredPlots = 12;
-    }
-
-    if(drawCount < requiredDraw) {
-        status = 'Invalid';
-        extendedStatus.push('Too few draw cards');
-    }
-
-    if(plotCount < requiredPlots) {
-        status = 'Invalid';
-        extendedStatus.push('Too few plot cards');
-    }  
-
-    if(_.any(combined, card => {
-        if(card.count > card.card.deck_limit) {
-            extendedStatus.push(card.card.label + ' has limit ' + card.card.deck_limit);
-
-            return true;
-        }
-
+    if(!pack) {
         return false;
-    })) {
-        status = 'Invalid';
     }
 
-    if(plotCount > requiredPlots) {
-        extendedStatus.push('Too many plots');
-        status = 'Invalid';
+    let releaseDate = pack.available || pack.date_release;
+
+    if(!releaseDate) {
+        return false;
     }
 
-    if(isRains) {
-        var schemePlots = _.filter(deck.plotCards, plot => {
-            return hasTrait(plot, 'Scheme');
-        });
+    releaseDate = moment(releaseDate, 'YYYY-MM-DD');
+    let now = moment();
 
-        var groupedSchemes = _.groupBy(schemePlots, plot => {
-            return plot.card.code;
-        });
-
-        if(_.size(groupedSchemes) !== 5 && !_.all(groupedSchemes, plot => {
-            return plot.count === 1;
-        })) {
-            extendedStatus.push('Rains requires 5 different scheme plots');
-            status = 'Invalid';
-        }
-    }
-   
-    // Kings of summer
-    if(deck.agenda && deck.agenda.code === '04037' && _.any(deck.plotCards, card => {
-        return hasTrait(card, 'winter');
-    })) {
-        extendedStatus.push('Kings of Summer cannot include Winter plots');
-        status = 'Invalid';
-    }
-
-    // Kings of winter
-    if(deck.agenda && deck.agenda.code === '04038' && _.any(deck.plotCards, card => {
-        return hasTrait(card, 'summer');
-    })) {
-        extendedStatus.push('Kings of Winter cannot include Summer plots');
-        status = 'Invalid';
-    }
-
-    // Fealty
-    if(deck.agenda && deck.agenda.code === '01027' && _.reduce(deck.drawCards, (counter, card) => {
-        return card.card.faction_code === 'neutral' ? counter + card.count : counter;
-    }, 0) > 15) {
-        status = 'Invalid';
-        extendedStatus.push('You cannot include more than 15 neutral cards in a deck with Fealty');
-    }
-
-    // The Brotherhood Without Banners
-    if(deck.agenda && deck.agenda.code === '06119' &&
-    _.any(deck.drawCards, card => {
-        return card.card.is_loyal && card.card.type_code === 'character';
-    })) {
-        status = 'Invalid';
-        extendedStatus.push('The Brotherhood Without Banners cannot include loyal characters');
-    }
-
-    // Alliance
-    var bannerCount = 0;
-
-    if((!deck.agenda || deck.agenda && deck.agenda.code !== '06018') && !_.all(combined, card => {
-        var faction = card.card.faction_code.toLowerCase();
-        var bannerCard = false;
-
-        if(deck.agenda && isBannerCard(deck.agenda.code, faction) && !card.card.is_loyal) {
-            bannerCount += card.count;
-            bannerCard = true;
-        }
-
-        return bannerCard || faction === deck.faction.value.toLowerCase() || faction === 'neutral';
-    })) {
-        extendedStatus.push('Too many out of faction cards');
-        status = 'Invalid';
-    }
-
-    if(bannerCount > 0 && bannerCount < 12) {
-        extendedStatus.push('Not enough banner faction cards');
-        status = 'Invalid';
-    }
-
-    return { status: status, plotCount: plotCount, drawCount: drawCount, extendedStatus: extendedStatus };
+    return releaseDate <= now;
 }
+
+function rulesForBanner(faction, factionName) {
+    return {
+        mayInclude: card => card.faction_code === faction && !card.is_loyal && card.type_code !== 'plot',
+        rules: [
+            {
+                message: 'Must contain 12 or more ' + factionName + ' cards',
+                condition: deck => getDeckCount(_(deck.drawCards).filter(cardQuantity => cardQuantity.card.faction_code === faction)) >= 12
+            }
+        ]
+    };
+}
+
+/**
+ * Validation rule structure is as follows. All fields are optional.
+ *
+ * requiredDraw  - the minimum amount of cards required for the draw deck.
+ * requiredPlots - the exact number of cards required for the plot deck.
+ * mayInclude    - function that takes a card and returns true if it is allowed in the overall deck.
+ * cannotInclude - function that takes a card and return true if it is not allowed in the overall deck.
+ * rules         - an array of objects containing a `condition` function that takes a deck and return true if the deck is valid for that rule, and a `message` used for errors when invalid.
+ */
+const agendaRules = {
+    // Banner of the stag
+    '01198': rulesForBanner('baratheon', 'Baratheon'),
+    // Banner of the kraken
+    '01199': rulesForBanner('greyjoy', 'Greyjoy'),
+    // Banner of the lion
+    '01200': rulesForBanner('lannister', 'Lannister'),
+    // Banner of the sun
+    '01201': rulesForBanner('martell', 'Martell'),
+    // Banner of the watch
+    '01202': rulesForBanner('thenightswatch', 'Night\'s Watch'),
+    // Banner of the wolf
+    '01203': rulesForBanner('stark', 'Stark'),
+    // Banner of the dragon
+    '01204': rulesForBanner('targaryen', 'Targaryen'),
+    // Banner of the rose
+    '01205': rulesForBanner('tyrell', 'Tyrell'),
+    // Fealty
+    '01027': {
+        rules: [
+            {
+                message: 'You cannot include more than 15 neutral cards in a deck with Fealty',
+                condition: deck => getDeckCount(_.filter(deck.drawCards, cardQuantity => cardQuantity.card.faction_code === 'neutral')) <= 15
+            }
+        ]
+    },
+    // Kings of Summer
+    '04037': {
+        cannotInclude: card => card.type_code === 'plot' && hasTrait(card, 'Winter'),
+        rules: [
+            {
+                message: 'Kings of Summer cannot include Winter plot cards',
+                condition: deck => !_.any(deck.plotCards, cardQuantity => hasTrait(cardQuantity.card, 'Winter'))
+            }
+        ]
+    },
+    // Kings of Winter
+    '04038': {
+        cannotInclude: card => card.type_code === 'plot' && hasTrait(card, 'Summer'),
+        rules: [
+            {
+                message: 'Kings of Winter cannot include Summer plot cards',
+                condition: deck => !_.any(deck.plotCards, cardQuantity => hasTrait(cardQuantity.card, 'Summer'))
+            }
+        ]
+    },
+    // Rains of Castamere
+    '05045': {
+        requiredPlots: 12,
+        rules: [
+            {
+                message: 'Rains of Castamere must contain exactly 5 different Scheme plots',
+                condition: deck => {
+                    let schemePlots = _.filter(deck.plotCards, cardQuantity => hasTrait(cardQuantity.card, 'Scheme'));
+                    return schemePlots.length === 5 && getDeckCount(schemePlots) === 5;
+                }
+            }
+        ]
+    },
+    // Alliance
+    '06018': {
+        requiredDraw: 75,
+        rules: [
+            {
+                message: 'Alliance cannot have more than 2 Banner agendas',
+                condition: deck => _.size(deck.bannerCards) <= 2
+            }
+        ]
+    },
+    // The Brotherhood Without Banners
+    '06119': {
+        cannotInclude: card => card.type_code === 'character' && card.is_loyal,
+        rules: [
+            {
+                message: 'The Brotherhood Without Banners cannot include loyal characters',
+                condition: deck => !_.any(deck.drawCards, cardQuantity => cardQuantity.card.type_code === 'character' && cardQuantity.card.is_loyal)
+            }
+        ]
+    }
+};
+
+class DeckValidator {
+    constructor(packs) {
+        this.packs = packs;
+    }
+
+    validateDeck(deck) {
+        let errors = [];
+        let unreleasedCards = [];
+        let rules = this.getRules(deck);
+        let plotCount = getDeckCount(deck.plotCards);
+        let drawCount = getDeckCount(deck.drawCards);
+
+        if(plotCount < rules.requiredPlots) {
+            errors.push('Too few plot cards');
+        } else if(plotCount > rules.requiredPlots) {
+            errors.push('Too many plot cards');
+        }
+
+        if(drawCount < rules.requiredDraw) {
+            errors.push('Too few draw cards');
+        }
+
+        _.each(rules.rules, rule => {
+            if(!rule.condition(deck)) {
+                errors.push(rule.message);
+            }
+        });
+
+        let allCards = deck.plotCards.concat(deck.drawCards);
+        let cardCountByName = {};
+
+        _.each(allCards, cardQuantity => {
+            cardCountByName[cardQuantity.card.name] = cardCountByName[cardQuantity.card.name] || { name: cardQuantity.card.name, limit: cardQuantity.card.deck_limit, count: 0 };
+            cardCountByName[cardQuantity.card.name].count += cardQuantity.count;
+
+            if(!rules.mayInclude(cardQuantity.card) || rules.cannotInclude(cardQuantity.card)) {
+                errors.push(cardQuantity.card.label + ' is not allowed by faction or agenda');
+            }
+
+            if(!isCardInReleasedPack(this.packs, cardQuantity.card)) {
+                unreleasedCards.push(cardQuantity.card.label + ' is not yet released');
+            }
+        });
+
+        _.each(cardCountByName, card => {
+            if(card.count > card.limit) {
+                errors.push(card.name + ' has limit ' + card.limit);
+            }
+        });
+
+        let isValid = errors.length === 0;
+
+        return {
+            status: !isValid ? 'Invalid' : (unreleasedCards.length === 0 ? 'Valid' : 'Unreleased Cards'),
+            plotCount: plotCount,
+            drawCount: drawCount,
+            extendedStatus: errors.concat(unreleasedCards),
+            isValid: isValid
+        };
+    }
+
+    getRules(deck) {
+        const standardRules = {
+            requiredDraw: 60,
+            requiredPlots: 7
+        };
+        let factionRules = this.getFactionRules(deck.faction.value.toLowerCase());
+        let agendaRules = this.getAgendaRules(deck);
+        return this.combineValidationRules([standardRules, factionRules].concat(agendaRules));
+    }
+
+    getFactionRules(faction) {
+        return {
+            mayInclude: card => card.faction_code === faction || card.faction_code === 'neutral'
+        };
+    }
+
+    getAgendaRules(deck) {
+        if(!deck.agenda) {
+            return [];
+        }
+
+        let allAgendas = [deck.agenda].concat(deck.bannerCards || []);
+        return _.compact(_(allAgendas).map(agenda => agendaRules[agenda.code]));
+    }
+
+    combineValidationRules(validators) {
+        let mayIncludeFuncs = _.compact(_.pluck(validators, 'mayInclude'));
+        let cannotIncludeFuncs = _.compact(_.pluck(validators, 'cannotInclude'));
+        let combinedRules = _.reduce(validators, (rules, validator) => rules.concat(validator.rules || []), []);
+        let combined = {
+            mayInclude: card => _.any(mayIncludeFuncs, func => func(card)),
+            cannotInclude: card => _.any(cannotIncludeFuncs, func => func(card)),
+            rules: combinedRules
+        };
+        return _.extend({}, ...validators, combined);
+    }
+}
+
+module.exports = function validateDeck(deck, packs) {
+    let validator = new DeckValidator(packs);
+    return validator.validateDeck(deck);
+};

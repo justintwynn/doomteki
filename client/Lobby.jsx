@@ -7,6 +7,7 @@ import moment from 'moment';
 import * as actions from './actions';
 import Avatar from './Avatar.jsx';
 import News from './SiteComponents/News.jsx';
+import AlertPanel from './SiteComponents/AlertPanel.jsx';
 
 class InnerLobby extends React.Component {
     constructor() {
@@ -24,7 +25,7 @@ class InnerLobby extends React.Component {
     }
 
     componentDidMount() {
-        this.props.fetchNews();
+        this.props.loadNews({ limit: 3 });
     }
 
     componentDidUpdate() {
@@ -91,20 +92,20 @@ class InnerLobby extends React.Component {
 
         var users = _.map(this.props.users, user => {
             return (
-                <div>
+                <div key={ user.name }>
                     <Avatar emailHash={ user.emailHash } forceDefault={ user.noAvatar } />
-                    <span>{user.name}</span>
+                    <span>{ user.name }</span>
                 </div>
             );
         });
 
         return (
             <div>
-                { this.props.bannerNotice ? <div className='alert alert-danger'>{this.props.bannerNotice}</div> : null }
-                <div className='alert alert-info'>
-                    {this.props.newsLoading ? <div>News loading...</div> : null}
-                    <News news={this.props.news} />
-                </div>
+                { this.props.bannerNotice ? <AlertPanel message={ this.props.bannerNotice } type='error' /> : null }
+                <AlertPanel type='info' message='Latest Site News'>
+                    { this.props.loading ? <div>News loading...</div> : null }
+                    <News news={ this.props.news } />
+                </AlertPanel>
                 <div className='row'>
                     <span className='col-sm-9 text-center'><h1>Play A Game Of Thrones 2nd Edition</h1></span>
                     <span className='col-sm-3 hidden-xs'><h3>{'Online Users (' + users.length + ')'}</h3></span>
@@ -138,9 +139,10 @@ InnerLobby.displayName = 'Lobby';
 InnerLobby.propTypes = {
     bannerNotice: React.PropTypes.string,
     fetchNews: React.PropTypes.func,
+    loadNews: React.PropTypes.func,
+    loading: React.PropTypes.bool,
     messages: React.PropTypes.array,
     news: React.PropTypes.array,
-    newsLoading: React.PropTypes.bool,
     socket: React.PropTypes.object,
     users: React.PropTypes.array
 };
@@ -148,6 +150,7 @@ InnerLobby.propTypes = {
 function mapStateToProps(state) {
     return {
         bannerNotice: state.chat.notice,
+        loading: state.api.loading,
         messages: state.chat.messages,
         news: state.news.news,
         newsLoading: state.news.newsLoading,

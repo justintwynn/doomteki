@@ -65,7 +65,12 @@ class ChatCommands {
             waitingPromptTitle: 'Waiting for opponent to set power',
             cardCondition: card => card.location === 'play area' && card.controller === player,
             onSelect: (p, card) => {
-                card.modifyPower(num - card.power);
+                let power = num - card.power;
+                card.power += power;
+
+                if(card.power < 0) {
+                    card.power = 0;
+                }
 
                 this.game.addMessage('{0} uses the /power command to set the power of {1} to {2}', p, card, num);
                 return true;
@@ -210,14 +215,18 @@ class ChatCommands {
     }
 
     strength(player, args) {
-        var num = this.getNumberOrDefault(args[1], 1);
+        let num = this.getNumberOrDefault(args[1], 1);
 
         this.game.promptForSelect(player, {
             activePromptTitle: 'Select a card to set strength for',
             waitingPromptTitle: 'Waiting for opponent to set strength',
             cardCondition: card => card.location === 'play area' && card.controller === player && card.getType() === 'character',
             onSelect: (p, card) => {
-                card.strengthModifier = num - card.cardData.strength;
+                if(_.isNumber(card.strengthSet)) {
+                    card.strengthSet = num;
+                } else {
+                    card.strengthModifier = num - card.cardData.strength;
+                }
                 this.game.addMessage('{0} uses the /strength command to set the strength of {1} to {2}', p, card, num);
                 return true;
             }

@@ -3,17 +3,16 @@ const DrawCard = require('../../../drawcard.js');
 class MaryaSeaworth extends DrawCard {
     setupCardAbilities(ability) {
         this.reaction({
+            title: context => 'Kneel ' + context.event.target.name,
             when: {
-                onBypassedByStealth: (event, challenge, source, target) => {
-                    this.bypassed = target;
-                    return true;
-                }
+                onBypassedByStealth: () => true
             },
             cost: ability.costs.payGold(1),
             limit: ability.limit.perPhase(2),
-            handler: () => {
-                this.bypassed.controller.kneelCard(this.bypassed);
-                this.game.addMessage('{0} uses {1} to pay 1 gold to kneel {2}', this.controller, this, this.bypassed);
+            handler: context => {
+                let target = context.event.target;
+                target.controller.kneelCard(target);
+                this.game.addMessage('{0} uses {1} and pays 1 gold to kneel {2}', this.controller, this, target);
             }
         });
     }

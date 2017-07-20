@@ -122,6 +122,16 @@ const Effects = {
             }
         };
     },
+    setStrength: function(value) {
+        return {
+            apply: function(card) {
+                card.strengthSet = value;
+            },
+            unapply: function(card) {
+                card.strengthSet = undefined;
+            }
+        };
+    },
     modifyStrengthMultiplier: function(value) {
         return {
             apply: function(card) {
@@ -449,6 +459,17 @@ const Effects = {
             }
         };
     },
+    removeFromGame: function() {
+        return {
+            apply: function(card) {
+                card.owner.moveCard(card, 'out of game');
+            },
+            unapply: function(card, context) {
+                card.owner.putIntoPlay(card);
+                context.game.addMessage('{0} is put into play because of {1}', card, context.source);
+            }
+        };
+    },
     doesNotContributeToDominance: function() {
         return {
             apply: function(card) {
@@ -494,6 +515,16 @@ const Effects = {
             }
         };
     },
+    cannotMarshalOrPutIntoPlayByTitle: function(name) {
+        return {
+            apply: function(player) {
+                player.cannotMarshalOrPutIntoPlayByTitle.push(name);
+            },
+            unapply: function(player) {
+                player.cannotMarshalOrPutIntoPlayByTitle = _.reject(player.cannotMarshalOrPutIntoPlayByTitle, n => n === name);
+            }
+        };
+    },
     cannotMarshal: cannotEffect('marshal'),
     cannotPlay: cannotEffect('play'),
     cannotBeBypassedByStealth: cannotEffect('bypassByStealth'),
@@ -501,6 +532,17 @@ const Effects = {
     cannotBeKneeled: cannotEffect('kneel'),
     cannotBeStood: cannotEffect('stand'),
     cannotBeKilled: cannotEffect('kill'),
+    cannotGainPower: cannotEffect('gainPower'),
+    cannotGainGold: function() {
+        return {
+            apply: function(player) {
+                player.cannotGainGold = true;
+            },
+            unapply: function(player) {
+                player.cannotGainGold = false;
+            }
+        };
+    },
     cannotGainChallengeBonus: function() {
         return {
             apply: function(player) {
@@ -574,6 +616,16 @@ const Effects = {
             }
         };
     },
+    setMinCost: function(value) {
+        return {
+            apply: function(player, context) {
+                context.source.minCost = value;
+            },
+            unapply: function(player, context) {
+                context.source.minCost = 0;
+            }
+        };
+    },
     contributeChallengeStrength: function(value) {
         return {
             apply: function(player, context) {
@@ -642,12 +694,13 @@ const Effects = {
         return {
             apply: function(player, context) {
                 let playableLocation = new PlayableLocation('play', player, location);
-                context.canPlayFromOwn = playableLocation;
+                context.canPlayFromOwn = context.canPlayFromOwn || {};
+                context.canPlayFromOwn[player.name] = playableLocation;
                 player.playableLocations.push(playableLocation);
             },
             unapply: function(player, context) {
-                player.playableLocations = _.reject(player.playableLocations, l => l === context.canPlayFromOwn);
-                delete context.canPlayFromOwn;
+                player.playableLocations = _.reject(player.playableLocations, l => l === context.canPlayFromOwn[player.name]);
+                delete context.canPlayFromOwn[player.name];
             }
         };
     },

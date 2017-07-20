@@ -38,6 +38,7 @@ class DrawCard extends BaseCard {
         this.power = 0;
         this.strengthModifier = 0;
         this.strengthMultiplier = 1;
+        this.strengthSet = undefined;
         this.dominanceStrengthModifier = 0;
         this.contributesToDominance = true;
         this.kneeled = false;
@@ -54,6 +55,7 @@ class DrawCard extends BaseCard {
             mustBeDeclaredAsDefender: false
         };
         this.stealthLimit = 1;
+        this.minCost = 0;
     }
 
     canBeDuplicated() {
@@ -115,8 +117,16 @@ class DrawCard extends BaseCard {
         return this.icons[icon.toLowerCase()] > 0;
     }
 
+    getPrintedCost() {
+        return this.cardData.cost || 0;
+    }
+
     getCost() {
-        return this.cardData.cost;
+        return this.getPrintedCost();
+    }
+
+    getMinCost() {
+        return this.minCost;
     }
 
     getAmbushCost() {
@@ -147,11 +157,19 @@ class DrawCard extends BaseCard {
         });
     }
 
-    getStrength(printed = false) {
-        let baseStrength = (this.cardData.strength || 0);
+    getPrintedStrength() {
+        return (this.cardData.strength || 0);
+    }
 
-        if(this.controller.phase === 'setup' || printed) {
+    getStrength() {
+        let baseStrength = this.getPrintedStrength();
+
+        if(this.controller.phase === 'setup') {
             return baseStrength;
+        }
+
+        if(_.isNumber(this.strengthSet)) {
+            return this.strengthSet;
         }
 
         let modifiedStrength = this.strengthModifier + baseStrength;
@@ -230,17 +248,19 @@ class DrawCard extends BaseCard {
     }
 
     modifyPower(power) {
-        var oldPower = this.power;
+        this.game.applyGameAction('gainPower', this, card => {
+            let oldPower = card.power;
 
-        this.power += power;
+            card.power += power;
 
-        if(this.power < 0) {
-            this.power = 0;
-        }
+            if(card.power < 0) {
+                card.power = 0;
+            }
 
-        this.game.raiseEvent('onCardPowerChanged', this, this.power - oldPower);
+            this.game.raiseEvent('onCardPowerChanged', this, card.power - oldPower);
 
-        this.game.checkWinCondition(this.controller);
+            this.game.checkWinCondition(this.controller);
+        });
     }
 
     needsStealthTarget() {
@@ -287,6 +307,15 @@ class DrawCard extends BaseCard {
         return card.allowAttachment(this);
     }
 
+    removeAttachment(attachment) {
+        if(!attachment || !this.attachments.includes(attachment)) {
+            return;
+        }
+
+        this.attachments = _(this.attachments.reject(a => a === attachment));
+        attachment.parent = undefined;
+    }
+
     getPlayActions() {
         return StandardPlayActions
             .concat(this.abilities.playActions)
@@ -327,7 +356,8 @@ class DrawCard extends BaseCard {
     }
 
     canParticipateInChallenge() {
-        return this.allowGameAction('participateInChallenge');
+        return this.getType() === 'character'
+            && this.allowGameAction('participateInChallenge');
     }
 
     canBeBypassedByStealth() {
@@ -368,7 +398,7 @@ class DrawCard extends BaseCard {
             attachments: this.attachments.map(attachment => {
                 return attachment.getSummary(activePlayer, hideWhenFaceup);
             }),
-            baseStrength: this.getStrength(true),
+            baseStrength: this.getPrintedStrength(),
             dupes: this.dupes.map(dupe => {
                 if(dupe.dupes.size() !== 0) {
                     throw new Error('A dupe should not have dupes! ' + dupe.name);

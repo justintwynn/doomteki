@@ -38,8 +38,10 @@ class Player extends Spectator {
         this.costReducers = [];
         this.playableLocations = _.map(['marshal', 'play', 'ambush'], playingType => new PlayableLocation(playingType, this, 'hand'));
         this.usedPlotsModifier = 0;
+        this.cannotGainGold = false;
         this.cannotGainChallengeBonus = false;
         this.cannotTriggerCardAbilities = false;
+        this.cannotMarshalOrPutIntoPlayByTitle = [];
         this.abilityMaxByTitle = {};
         this.standPhaseRestrictions = [];
         this.mustChooseAsClaim = [];
@@ -378,7 +380,7 @@ class Player extends Spectator {
         var baseCost = playingType === 'ambush' ? card.getAmbushCost() : card.getCost();
         var matchingReducers = _.filter(this.costReducers, reducer => reducer.canReduce(playingType, card));
         var reducedCost = _.reduce(matchingReducers, (cost, reducer) => cost - reducer.getAmount(card), baseCost);
-        return Math.max(reducedCost, 0);
+        return Math.max(reducedCost, card.getMinCost());
     }
 
     markUsedReducers(playingType, card) {
@@ -448,9 +450,9 @@ class Player extends Spectator {
     }
 
     canPutIntoPlay(card) {
-        var owner = card.owner;
+        let owner = card.owner;
         return (
-            (!this.isCharacterDead(card) || this.canResurrect(card)) &&
+            (!this.isCharacterDead(card) || this.canResurrect(card)) && !this.cannotMarshalOrPutIntoPlayByTitle.includes(card.name) &&
             (
                 owner === this ||
                 !this.getDuplicateInPlay(card) &&
@@ -623,16 +625,18 @@ class Player extends Spectator {
         return attachment.canAttach(this, card);
     }
 
-    attach(player, attachment, cardId, playingType) {
-        let card = this.findCardInPlayByUuid(cardId);
-
+    attach(player, attachment, card, playingType) {
         if(!card || !attachment) {
             return;
         }
 
         let originalLocation = attachment.location;
+        let originalParent = attachment.parent;
 
         attachment.owner.removeCardFromPile(attachment);
+        if(originalParent) {
+            originalParent.removeAttachment(attachment);
+        }
         attachment.moveTo('play area', card);
         card.attachments.push(attachment);
 
@@ -930,6 +934,7 @@ class Player extends Spectator {
         this.deck.selected = true;
 
         this.faction.cardData = deck.faction;
+        this.faction.cardData.name = deck.faction.name;
         this.faction.cardData.code = deck.faction.value;
         this.faction.cardData.type_code = 'faction';
         this.faction.cardData.strength = 0;
@@ -966,9 +971,8 @@ class Player extends Spectator {
 
                 event.card.leavesPlay();
 
-                if(event.card.parent && event.card.parent.attachments) {
-                    event.card.parent.attachments = this.removeCardByUuid(event.card.parent.attachments, event.card.uuid);
-                    event.card.parent = undefined;
+                if(event.card.parent) {
+                    event.card.parent.removeAttachment(event.card);
                 }
 
                 card.moveTo(targetLocation);
@@ -1001,7 +1005,7 @@ class Player extends Spectator {
         }
 
         if(['dead pile', 'discard pile'].includes(targetLocation)) {
-            this.game.raiseMergedEvent('onCardPlaced', { card: card, location: targetLocation });
+            this.game.raiseMergedEvent('onCardPlaced', { card: card, location: targetLocation, player: this });
         }
     }
 
