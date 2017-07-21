@@ -327,6 +327,7 @@ class Player extends Spectator {
         this.agenda = preparedDeck.agenda;
         this.faction = preparedDeck.faction;
         this.drawDeck = _(preparedDeck.drawCards);
+        this.bannerCards = _(preparedDeck.bannerCards);
         this.allCards = _(preparedDeck.allCards);
     }
 
@@ -451,15 +452,36 @@ class Player extends Spectator {
 
     canPutIntoPlay(card) {
         let owner = card.owner;
-        return (
-            (!this.isCharacterDead(card) || this.canResurrect(card)) && !this.cannotMarshalOrPutIntoPlayByTitle.includes(card.name) &&
-            (
-                owner === this ||
-                !this.getDuplicateInPlay(card) &&
-                !owner.getDuplicateInPlay(card) &&
-                (!owner.isCharacterDead(card) || owner.canResurrect(card))
-            )
-        );
+
+        if(!card.isUnique()) {
+            return true;
+        }
+
+        if(this.cannotMarshalOrPutIntoPlayByTitle.includes(card.name)) {
+            return false;
+        }
+
+        if(this.isCharacterDead(card) && !this.canResurrect(card)) {
+            return false;
+        }
+
+        if(owner === this) {
+            let controlsAnOpponentsCopy = this.anyCardsInPlay(c => c.name === card.name && c.owner !== this);
+            let opponentControlsOurCopy = _.any(this.game.getPlayers(), player => {
+                return player !== this && player.anyCardsInPlay(c => c.name === card.name && c.owner === this && c !== card);
+            });
+
+            return !controlsAnOpponentsCopy && !opponentControlsOurCopy;
+        }
+
+        if(owner.isCharacterDead(card) && !owner.canResurrect(card)) {
+            return false;
+        }
+
+        let controlsACopy = this.anyCardsInPlay(c => c.name === card.name);
+        let opponentControlsACopy = owner.anyCardsInPlay(c => c.name === card.name && c !== card);
+
+        return !controlsACopy && !opponentControlsACopy;
     }
 
     canResurrect(card) {
@@ -555,11 +577,6 @@ class Player extends Spectator {
     }
 
     flipPlotFaceup() {
-        if(this.activePlot) {
-            var previousPlot = this.removeActivePlot('revealed plots');
-            this.game.raiseEvent('onPlotDiscarded', this, previousPlot);
-        }
-
         this.selectedPlot.flipFaceup();
         this.moveCard(this.selectedPlot, 'active plot');
         this.selectedPlot.applyPersistentEffects();
@@ -579,10 +596,11 @@ class Player extends Spectator {
         }
     }
 
-    removeActivePlot(targetLocation) {
+    removeActivePlot() {
         if(this.activePlot) {
-            var plot = this.activePlot;
-            this.moveCard(this.activePlot, targetLocation);
+            let plot = this.activePlot;
+            this.moveCard(this.activePlot, 'revealed plots');
+            this.game.raiseMergedEvent('onPlotDiscarded', { player: this, card: plot });
             this.activePlot = undefined;
             return plot;
         }
@@ -607,26 +625,25 @@ class Player extends Spectator {
         });
     }
 
-    canAttach(attachmentId, card) {
-        var attachment = this.findCardByUuidInAnyList(attachmentId);
-
-        if(!attachment) {
+    canAttach(attachment, card) {
+        if(!attachment || !card) {
             return false;
         }
 
-        if(card.location !== 'play area') {
-            return false;
-        }
-
-        if(card === attachment) {
-            return false;
-        }
-
-        return attachment.canAttach(this, card);
+        return (
+            card.location === 'play area' &&
+            card !== attachment &&
+            card.allowAttachment(attachment) &&
+            attachment.canAttach(this, card)
+        );
     }
 
     attach(player, attachment, card, playingType) {
         if(!card || !attachment) {
+            return;
+        }
+
+        if(!this.canAttach(attachment, card)) {
             return;
         }
 
@@ -1148,7 +1165,7 @@ class Player extends Spectator {
                 cards: this.getSummaryForCardList(pile.cards, activePlayer, pile.isPrivate)
             })),
             agenda: this.agenda ? this.agenda.getSummary(activePlayer) : undefined,
-            promptedActionWindows: this.promptedActionWindows,
+            bannerCards: this.getSummaryForCardList(this.bannerCards, activePlayer),
             cardsInPlay: this.getSummaryForCardList(this.cardsInPlay, activePlayer),
             claim: this.getClaim(),
             deadPile: this.getSummaryForCardList(this.deadPile, activePlayer),
@@ -1167,6 +1184,7 @@ class Player extends Spectator {
             plotDeck: this.getSummaryForCardList(this.plotDeck, activePlayer, true),
             plotDiscard: this.getSummaryForCardList(this.plotDiscard, activePlayer),
             plotSelected: !!this.selectedPlot,
+            promptedActionWindows: this.promptedActionWindows,
             reserve: this.getTotalReserve(),
             totalPower: this.getTotalPower(),
             user: _.omit(this.user, ['password', 'email'])
