@@ -16,7 +16,9 @@ function fetchImage(urlPath, code, imagePath, timeout) {
     }, timeout);
 }
 
-request.get(apiUrl + 'cards', function(error, res, body) {
+request.json
+
+request.json.get(apiUrl + 'cards', function(error, res, body) {
     if(error) {
         console.error('Unable to fetch cards');
         return;
@@ -48,7 +50,7 @@ request.get(apiUrl + 'cards', function(error, res, body) {
     });
 });
 
-request.get(apiUrl + 'packs', function(error, res, body) {
+request.json.get(apiUrl + 'packs', function(error, res, body) {
     if(error) {
         console.error('Unable to fetch packs');
         return;
